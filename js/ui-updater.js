@@ -18,50 +18,37 @@ class UIUpdater {
         this.dom = domManager;
         /** @type {AudioController} Audio controller for state information */
         this.audio = audioController;
-        /** @type {number|null} Timeout ID for success message auto-hide */
-        this.successTimeoutId = null;
-        /** @type {Object<string, string>} SVG icon definitions */
-        this.svgIcons = {
-            'icon-play': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',
-            'icon-pause': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>',
-            'icon-volume': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9v6h4l5 5V4L7 9H3z" fill="currentColor"/></svg>',
-            'icon-volume-muted': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.25.02-.01z" fill="currentColor"/></svg>',
-            'icon-share': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-        };
     }
 
     /**
-     * Replaces CSS icon classes with inline SVG icons.
-     * Improves visual consistency and reduces external dependencies.
+     * Replaces CSS icon classes with FontAwesome classes.
+     * Improves visual consistency and reduces custom SVG dependencies.
      */
     replaceIcons() {
         const iconElements = this.dom.querySelectorAll('.icon');
         iconElements.forEach(element => {
             const iconClass = Array.from(element.classList).find(cls => cls.startsWith('icon-'));
-            if (iconClass && this.svgIcons[iconClass]) {
-                try {
-                    const parser = new DOMParser();
-                    const svgDoc = parser.parseFromString(this.svgIcons[iconClass], 'image/svg+xml');
-                    const svgElement = svgDoc.documentElement;
-                    if (svgElement.tagName.toLowerCase() === 'svg') {
-                        // Copy class from original element to new SVG safely
-                        try {
-                            // Prefer the attribute string to avoid setter-only properties
-                            const originalClass = element.getAttribute && element.getAttribute('class') ? element.getAttribute('class') : (element.className || '');
-                            if (originalClass) svgElement.setAttribute('class', originalClass);
-                        } catch (classErr) {
-                            console.warn('Could not copy class to SVG element', classErr);
-                        }
-                        if (element.parentNode) {
-                            element.parentNode.replaceChild(svgElement, element);
-                        }
-                    } else {
-                        console.error('Invalid SVG content for icon:', iconClass);
-                        if (window && window.debug) window.debug.error('Invalid SVG icon content', { iconClass });
+            if (iconClass) {
+                const faClass = {
+                    'icon-play': 'fas fa-play',
+                    'icon-pause': 'fas fa-pause',
+                    'icon-volume': 'fas fa-volume-up',
+                    'icon-volume-muted': 'fas fa-volume-mute',
+                    'icon-share': 'fas fa-link',
+                    'icon-folder': 'fas fa-folder',
+                    'icon-list': 'fas fa-list',
+                    'icon-chevron-down': 'fas fa-chevron-down',
+                    'icon-warning': 'fas fa-exclamation-triangle',
+                    'icon-check': 'fas fa-check'
+                }[iconClass];
+                if (faClass) {
+                    element.className = faClass;
+                    // Ensure it's an <i> element for FontAwesome
+                    if (element.tagName.toLowerCase() !== 'i') {
+                        const i = document.createElement('i');
+                        i.className = faClass;
+                        element.parentNode.replaceChild(i, element);
                     }
-                } catch (error) {
-                    console.error('Error parsing SVG for icon:', iconClass, error);
-                    if (window && window.debug) window.debug.error('Error parsing SVG', { iconClass, error: String(error) });
                 }
             }
         });
@@ -120,7 +107,7 @@ class UIUpdater {
                     className: 'song-share-button',
                     title: 'この曲のリンクをコピー'
                 });
-                const shareIcon = this.dom.createElement('span', { class: 'icon icon-share' });
+                const shareIcon = this.dom.createElement('i', { class: 'fas fa-link' });
                 shareBtn.appendChild(shareIcon);
 
                 li.appendChild(songTitle);
@@ -250,7 +237,7 @@ class UIUpdater {
             } else {
                 // Create safe elements
                 errorMessage.innerHTML = '';
-                const iconSpan = this.dom.createElement('span', { class: 'icon icon-warning' });
+                const iconSpan = this.dom.createElement('i', { class: 'fas fa-exclamation-triangle' });
                 const textSpan = this.dom.createElement('span', { class: 'error-text' });
                 textSpan.textContent = message;
                 errorMessage.appendChild(iconSpan);
@@ -284,7 +271,7 @@ class UIUpdater {
             } else {
                 // Create safe elements
                 errorMessage.innerHTML = '';
-                const iconSpan = this.dom.createElement('span', { class: 'icon icon-check' });
+                const iconSpan = this.dom.createElement('i', { class: 'fas fa-check' });
                 const textSpan = this.dom.createElement('span', { class: 'error-text' });
                 textSpan.textContent = message;
                 errorMessage.appendChild(iconSpan);
