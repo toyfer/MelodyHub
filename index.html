@@ -9,27 +9,27 @@
 <body>
     <div class="container">
         <header class="app-header">
-            <h1><span class="icon">🎵</span> MelodyHub</h1>
+            <h1><span class="icon icon-music"></span> MelodyHub</h1>
             <p class="app-subtitle">あなたの音楽ライブラリ</p>
         </header>
         
         <!-- アルバム選択 -->
         <section class="section" id="album-selector">
             <div class="section-header">
-                <h2><span class="icon">📁</span> アルバムを選択</h2>
+                <h2><span class="icon icon-folder"></span> アルバムを選択</h2>
             </div>
             <div class="input-group">
                 <select id="album-select">
                     <option value="">-- アルバムを選択してください --</option>
                 </select>
-                <span class="select-icon">▼</span>
+                <span class="select-icon"><span class="icon icon-chevron-down"></span></span>
             </div>
         </section>
 
         <!-- 曲一覧 -->
         <section class="section" id="song-list" style="display: none;">
             <div class="section-header">
-                <h2><span class="icon">🎶</span> トラック一覧</h2>
+                <h2><span class="icon icon-list-music"></span> トラック一覧</h2>
             </div>
             <div class="song-container">
                 <ul id="song-items"></ul>
@@ -39,7 +39,7 @@
         <!-- オーディオプレイヤー -->
         <section class="section player-section" id="audio-player" style="display: none;">
             <div class="section-header">
-                <h2><span class="icon">▶️</span> 再生中</h2>
+                <h2><span class="icon icon-play"></span> 再生中</h2>
             </div>
             <div class="player-container">
                 <div id="now-playing" class="now-playing"></div>
@@ -49,7 +49,7 @@
 
         <!-- エラーメッセージ -->
         <div id="error-message" class="error-message" style="display: none;">
-            <span class="icon">⚠️</span>
+            <span class="icon icon-warning"></span>
             <span class="error-text"></span>
         </div>
     </div>
