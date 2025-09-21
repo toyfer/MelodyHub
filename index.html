@@ -83,6 +83,138 @@
         </div>
     </div>
 
-    <script src="js/player.js"></script>
+    <script type="module">
+        import DOMManager from './js/dom-manager.js';
+        import APIClient from './js/api-client.js';
+        import AudioController from './js/audio-controller.js';
+        import UIUpdater from './js/ui-updater.js';
+        import EventHandler from './js/event-handler.js';
+
+        // 設定
+        const repoOwner = 'toyfer';
+        const repoName = 'MelodyHub';
+        const demoMode = false;
+
+        // モジュールの初期化
+        const dom = new DOMManager();
+        const api = new APIClient(repoOwner, repoName);
+        const audio = new AudioController(dom.getElement('audio'), repoOwner, repoName);
+        const ui = new UIUpdater(dom, audio);
+
+        // グローバル関数として公開（event-handlerからアクセスするため）
+        window.app = {
+            demoMode,
+            playSong: async (album, song) => {
+                if (!album || !song) {
+                    ui.showError('アルバム名または曲名が指定されていません');
+                    return;
+                }
+
+                try {
+                    const success = await audio.playSong(album, song, demoMode);
+                    if (success) {
+                        ui.updateNowPlaying(song);
+                        ui.updatePlayingVisual(song);
+                        dom.setStyle(dom.getElement('audio-player'), { display: 'block' });
+                        ui.hideNonPlayerSections();
+                        ui.showSuccess(`再生開始: ${song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')}`);
+                    }
+                } catch (err) {
+                    ui.showError(err.message || '音楽の再生に失敗しました');
+                }
+            },
+            shareLink: async (album, song, buttonElement = null) => {
+                const currentUrl = new URL(window.location);
+                currentUrl.searchParams.set('album', album);
+                currentUrl.searchParams.set('song', song);
+                const shareUrl = currentUrl.toString();
+
+                try {
+                    await navigator.clipboard.writeText(shareUrl);
+                    ui.showSuccess(`リンクをコピーしました: ${song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')}`);
+
+                    if (buttonElement) {
+                        const originalText = buttonElement.innerHTML;
+                        buttonElement.innerHTML = '<span class="icon icon-check"></span>';
+                        buttonElement.classList.add('copied');
+
+                        setTimeout(() => {
+                            buttonElement.innerHTML = originalText;
+                            buttonElement.classList.remove('copied');
+                        }, 2000);
+                    }
+                } catch (err) {
+                    ui.showError('クリップボードへのアクセスができません。URLを手動でコピーしてください: ' + shareUrl);
+                }
+            }
+        };
+
+        // イベントハンドラーの初期化（appオブジェクトを渡す）
+        const events = new EventHandler(dom, api, audio, ui, window.app);
+
+        // 初期化
+        async function init() {
+            ui.replaceIcons();
+            if (audio.audio) {
+                audio.audio.volume = audio.currentVolume;
+            }
+            ui.updatePlayPauseButton();
+            ui.updateVolumeButton();
+
+            const albums = await api.fetchAlbumList(demoMode);
+            ui.populateAlbumSelect(albums);
+            await handleUrlParameters(albums);
+        }
+
+        // URLパラメータ処理
+        async function handleUrlParameters(albums) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialAlbum = urlParams.get('album');
+            const initialSong = urlParams.get('song');
+
+            if (initialAlbum && initialSong) {
+                const errors = validateUrlParameters(initialAlbum, initialSong, albums);
+                if (errors.length > 0) {
+                    ui.showError(errors.join(' / '));
+                    return;
+                }
+
+                if (albums.includes(initialAlbum)) {
+                    const select = dom.getElement('album-select');
+                    if (select) select.value = initialAlbum;
+                    const songs = await api.fetchSongList(initialAlbum, demoMode);
+
+                    if (songs.includes(initialSong)) {
+                        ui.displaySongList(songs, initialAlbum);
+                        window.app.playSong(initialAlbum, initialSong);
+                    } else {
+                        ui.displaySongList(songs, initialAlbum);
+                        ui.showError(`指定された曲がアルバムに存在しません: ${initialSong}`);
+                    }
+                } else {
+                    ui.showError(`指定されたアルバムが存在しません: ${initialAlbum}`);
+                }
+            }
+        }
+
+        function validateUrlParameters(album, song, availableAlbums) {
+            const errors = [];
+
+            if (!album) {
+                errors.push('アルバムが指定されていません');
+            } else if (!availableAlbums.includes(album)) {
+                errors.push(`指定されたアルバムが存在しません: ${album}`);
+            }
+
+            if (!song) {
+                errors.push('曲が指定されていません');
+            }
+
+            return errors;
+        }
+
+        // 初期化実行
+        init();
+    </script>
 </body>
 </html>
