@@ -322,6 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         audioPlayer.style.display = 'block';
         
+        // UX improvement: Hide other sections when music is playing
+        hideNonPlayerSections();
+        
         // Add visual feedback for currently playing song
         document.querySelectorAll('#song-items li').forEach(li => {
             li.classList.remove('playing');
@@ -451,6 +454,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // UX Functions for better experience
+    function hideNonPlayerSections() {
+        document.getElementById('album-selector').style.display = 'none';
+        document.getElementById('song-list').style.display = 'none';
+    }
+    
+    function showAllSections() {
+        document.getElementById('album-selector').style.display = 'block';
+        document.getElementById('song-list').style.display = 'block';
+    }
+
     // Custom Audio Player Functions
     function formatTime(seconds) {
         if (isNaN(seconds)) return '0:00';
@@ -508,6 +522,8 @@ document.addEventListener('DOMContentLoaded', () => {
         progressFill.style.width = '0%';
         progressHandle.style.left = '0%';
         currentTimeDisplay.textContent = formatTime(0);
+        // Show sections again when music ends
+        showAllSections();
     });
 
     // Control Event Listeners
@@ -515,9 +531,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isPlaying) {
             audio.pause();
             isPlaying = false;
+            // Show sections when paused
+            showAllSections();
         } else {
             audio.play();
             isPlaying = true;
+            // Hide sections when playing
+            hideNonPlayerSections();
         }
         updatePlayPauseButton();
     });

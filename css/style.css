@@ -103,121 +103,195 @@ body::before {
     50% { transform: scale(1.05); }
 }
 
-/* Icon Styles */
+/* Icon Styles for CSS-based icons */
 .icon {
     display: inline-block;
-    font-style: normal;
     font-size: 1.25rem;
     margin-right: 0.75rem;
     transition: all 0.3s ease;
+    flex-shrink: 0;
+    vertical-align: middle;
     width: 1.25rem;
     height: 1.25rem;
     position: relative;
-    flex-shrink: 0;
-    vertical-align: middle;
 }
 
-/* Custom Icon Implementations */
-.icon-music::before {
-    content: '♪';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.2em;
-    line-height: 1;
-}
-
+/* CSS-based Icon Implementations */
 .icon-folder::before {
-    content: '📁';
+    content: '';
     position: absolute;
+    width: 14px;
+    height: 12px;
+    background: currentColor;
+    border-radius: 2px 2px 0 0;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1em;
-    line-height: 1;
+    transform: translate(-50%, -60%);
 }
 
-.icon-list-music::before {
-    content: '🎵';
+.icon-folder::after {
+    content: '';
     position: absolute;
+    width: 16px;
+    height: 10px;
+    background: currentColor;
+    border-radius: 0 0 2px 2px;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1em;
-    line-height: 1;
-}
-
-.icon-play::before {
-    content: '▶';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1em;
-    line-height: 1;
+    transform: translate(-50%, -20%);
 }
 
 .icon-chevron-down::before {
-    content: '▼';
+    content: '';
     position: absolute;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translate(-50%, -60%) rotate(45deg);
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.8em;
-    line-height: 1;
 }
 
-.icon-warning::before {
-    content: '⚠';
+.icon-list::before {
+    content: '';
     position: absolute;
+    width: 16px;
+    height: 14px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 1em;
-    line-height: 1;
+    background: 
+        linear-gradient(currentColor, currentColor) 0 1px/12px 2px no-repeat,
+        linear-gradient(currentColor, currentColor) 0 6px/8px 2px no-repeat,
+        linear-gradient(currentColor, currentColor) 0 11px/10px 2px no-repeat;
 }
 
-.icon-share::before {
-    content: '🔗';
+.icon-play::before {
+    content: '';
     position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 12px solid currentColor;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.9em;
-    line-height: 1;
+    transform: translate(-40%, -50%);
 }
 
 .icon-pause::before {
-    content: '⏸';
+    content: '';
     position: absolute;
+    width: 12px;
+    height: 16px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 1em;
-    line-height: 1;
+    background: 
+        linear-gradient(currentColor, currentColor) 0 0/4px 16px no-repeat,
+        linear-gradient(currentColor, currentColor) 8px 0/4px 16px no-repeat;
 }
 
 .icon-volume::before {
-    content: '🔊';
+    content: '';
     position: absolute;
+    width: 6px;
+    height: 6px;
+    border: 3px solid currentColor;
+    border-right: 0;
+    border-radius: 3px 0 0 3px;
+    top: 50%;
+    left: 30%;
+    transform: translate(-50%, -50%);
+}
+
+.icon-volume::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 6px solid currentColor;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 0.9em;
-    line-height: 1;
 }
 
 .icon-volume-muted::before {
-    content: '🔇';
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border: 3px solid currentColor;
+    border-right: 0;
+    border-radius: 3px 0 0 3px;
+    top: 50%;
+    left: 30%;
+    transform: translate(-50%, -50%);
+}
+
+.icon-volume-muted::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 2px;
+    background: currentColor;
+    transform: translate(-50%, -50%) rotate(45deg);
+    top: 50%;
+    left: 50%;
+}
+
+.icon-share::before {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    top: 50%;
+    left: 30%;
+    transform: translate(-50%, -50%);
+}
+
+.icon-share::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 2px;
+    background: currentColor;
+    top: 50%;
+    left: 60%;
+    transform: translate(-50%, -50%);
+}
+
+.icon-warning::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 14px solid currentColor;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.icon-warning::after {
+    content: '!';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 0.9em;
-    line-height: 1;
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
+    z-index: 1;
 }
 
+/* Custom Icon Implementations */
 /* Section Styles */
 .section {
     background: var(--surface);
@@ -826,19 +900,6 @@ li.empty-state::before {
     border-color: #bbf7d0 !important;
 }
 
-/* Check icon for success messages */
-.icon-check::before {
-    content: '';
-    position: absolute;
-    width: 6px;
-    height: 12px;
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -60%) rotate(45deg);
-}
-
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -879,14 +940,7 @@ li.empty-state::before {
     }
     
     .icon {
-        width: 1rem;
-        height: 1rem;
-    }
-    
-    .icon-music::before,
-    .icon-list-music::before {
-        width: 14px;
-        height: 14px;
+        font-size: 1rem;
     }
     
     /* Custom Audio Player Responsive */
