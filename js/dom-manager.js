@@ -160,6 +160,18 @@ class DOMManager {
     refreshElements() {
         this.initElements();
     }
+
+    /**
+     * Sets multiple CSS styles on an element.
+     * @param {HTMLElement} element - The element to style
+     * @param {Object<string, string>} styles - Object of style properties and values
+     */
+    setStyle(element, styles) {
+        if (!element || typeof styles !== 'object') return;
+        Object.keys(styles).forEach(key => {
+            element.style[key] = styles[key];
+        });
+    }
 }
 
 export default DOMManager;
