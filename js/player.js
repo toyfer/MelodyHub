@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (DEMO_MODE) {
             // In demo mode, just show the player interface without actual audio
             const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-            nowPlaying.innerHTML = `<strong>${album.charAt(0).toUpperCase() + album.slice(1)}</strong> - ${cleanSongName}`;
+            nowPlaying.innerHTML = cleanSongName;
             
             audioPlayer.style.display = 'block';
             errorMessage.style.display = 'none';
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Clean up song name for display
         const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-        nowPlaying.innerHTML = `<strong>${album}</strong> - ${cleanSongName}`;
+        nowPlaying.innerHTML = cleanSongName;
         
         audioPlayer.style.display = 'block';
         errorMessage.style.display = 'none';
