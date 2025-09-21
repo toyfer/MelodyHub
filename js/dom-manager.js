@@ -48,8 +48,6 @@ class DOMManager {
         elementIds.forEach(id => {
             const element = document.getElementById(id);
             if (!element) {
-                console.warn(`DOM element with ID '${id}' not found`);
-                if (window && window.debug) window.debug.warn('DOM element not found', { id });
             }
             this.elements[id] = element;
         });
@@ -71,13 +69,11 @@ class DOMManager {
      */
     querySelector(selector) {
         if (!selector || typeof selector !== 'string') {
-            console.error('Invalid selector provided to querySelector');
             return null;
         }
         try {
             return document.querySelector(selector);
         } catch (error) {
-            console.error('Error in querySelector:', error);
             return null;
         }
     }
@@ -89,13 +85,11 @@ class DOMManager {
      */
     querySelectorAll(selector) {
         if (!selector || typeof selector !== 'string') {
-            console.error('Invalid selector provided to querySelectorAll');
             return document.querySelectorAll(''); // empty NodeList
         }
         try {
             return document.querySelectorAll(selector);
         } catch (error) {
-            console.error('Error in querySelectorAll:', error);
             return document.querySelectorAll(''); // empty NodeList
         }
     }
@@ -115,7 +109,6 @@ class DOMManager {
         Object.keys(attributes).forEach(attr => {
             const lower = attr.toLowerCase();
             if (dangerousAttributes.includes(lower)) {
-                console.warn(`Skipping dangerous attribute: ${attr}`);
                 return;
             }
             try {
@@ -146,8 +139,6 @@ class DOMManager {
                 // Last resort: set as attribute
                 element.setAttribute(attr, attributes[attr]);
             } catch (error) {
-                console.error(`Error applying attribute/property ${attr}:`, error);
-                if (window && window.debug) window.debug.error('createElement attribute error', { attr, error: String(error) });
             }
         });
         return element;

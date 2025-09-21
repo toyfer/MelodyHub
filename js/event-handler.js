@@ -54,13 +54,6 @@ class EventHandler {
             const element = this.dom.getElement(id);
             if (element) {
                 element.addEventListener(event, handler);
-                    try {
-                        if (window && window.debug && typeof window.debug.info === 'function') {
-                            window.debug.info(`Listener added: ${id} ${event}`);
-                        }
-                    } catch (e) {
-                        console.warn('Debug logging failed during setupEventListeners', e);
-                    }
             }
         });
 
@@ -69,13 +62,6 @@ class EventHandler {
         if (songItems) {
             this.songListHandler = this.handleSongClick.bind(this);
             songItems.addEventListener('click', this.songListHandler);
-            try {
-                if (window && window.debug && typeof window.debug.info === 'function') {
-                    window.debug.info('Listener added: song-items click');
-                }
-            } catch (e) {
-                console.warn('Debug logging failed during song list listener setup', e);
-            }
         }
 
         // Keyboard shortcuts
@@ -91,13 +77,6 @@ class EventHandler {
             const element = this.dom.getElement(id);
             if (element) {
                 element.removeEventListener(event, handler);
-                    try {
-                        if (window && window.debug && typeof window.debug.info === 'function') {
-                            window.debug.info(`Listener removed: ${id} ${event}`);
-                        }
-                    } catch (e) {
-                        console.warn('Debug logging failed during removeEventListeners', e);
-                    }
             }
         });
 
@@ -118,8 +97,6 @@ class EventHandler {
      */
     async handleAlbumChange() {
         if (this.isChangingAlbum) {
-            console.warn('Already changing album, skipping');
-                try { if (window && window.debug && typeof window.debug.warn === 'function') window.debug.warn('Album change skipped: already changing'); } catch (e) {}
             return;
         }
 
@@ -131,7 +108,6 @@ class EventHandler {
         }
 
         this.isChangingAlbum = true;
-        try { if (window && window.debug && typeof window.debug.info === 'function') window.debug.info(`Album change started: ${selectedAlbum}`); } catch (e) {}
         const songItems = this.dom.getElement('song-items');
         if (songItems) {
             songItems.innerHTML = '<li class="loading">楽曲を読み込み中...</li>';
@@ -140,15 +116,12 @@ class EventHandler {
 
         try {
             const songs = await this.api.fetchSongList(selectedAlbum);
-                try { if (window && window.debug && typeof window.debug.log === 'function') window.debug.log(`Fetched ${Array.isArray(songs) ? songs.length : 0} songs for ${selectedAlbum}`); } catch (e) {}
             this.ui.displaySongList(songs, selectedAlbum);
         } catch (error) {
             this.ui.showError('曲リストの取得に失敗しました');
-                try { if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('fetchSongList failed', error); } catch (e) {}
             this.dom.setStyle(this.dom.getElement('song-list'), { display: 'none' });
         } finally {
             this.isChangingAlbum = false;
-                try { if (window && window.debug && typeof window.debug.info === 'function') window.debug.info(`Album change completed: ${selectedAlbum}`); } catch (e) {}
         }
     }
 
@@ -169,7 +142,6 @@ class EventHandler {
 
             const song = li.title;
             const album = this.dom.getElement('album-select').value;
-            try { if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Song clicked', { album, song }); } catch (e) {}
             if (!album) {
                 this.ui.showError('アルバムが選択されていません');
                 return;
@@ -191,11 +163,9 @@ class EventHandler {
                 if (this.audio.isPlaying) {
                     this.audio.pause();
                     this.ui.showAllSections();
-                        try { if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Play -> Pause'); } catch (e) {}
                 } else {
                     await this.audio.resume();
                     this.ui.hideNonPlayerSections();
-                        try { if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Pause -> Resume'); } catch (e) {}
                 }
                 this.ui.updatePlayPauseButton();
             } catch (error) {
@@ -216,7 +186,6 @@ class EventHandler {
             try {
                 this.audio.toggleMute();
                 this.ui.updateVolumeButton();
-                    try { if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Volume toggled', { muted: this.audio.isMuted }); } catch (e) {}
             } catch (error) {
                 this.ui.showError('音量設定に失敗しました: ' + error.message);
                     try { if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('handleVolumeClick failed', error); } catch (e) {}
@@ -242,7 +211,6 @@ class EventHandler {
             const progress = clickX / width;
             const clampedProgress = Math.max(0, Math.min(1, progress));
             this.audio.seek(clampedProgress);
-                try { if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Progress clicked', { progress: clampedProgress }); } catch (e) {}
         } catch (error) {
             this.ui.showError('シークに失敗しました: ' + error.message);
                 try { if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('handleProgressClick failed', error); } catch (e) {}
@@ -269,7 +237,6 @@ class EventHandler {
             this.audio.setVolume(clampedVolume);
             this.ui.updateVolumeButton();
             this.ui.updateVolume();
-                try { if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Volume slider set', { volume: clampedVolume }); } catch (e) {}
         } catch (error) {
             this.ui.showError('音量調整に失敗しました: ' + error.message);
                 try { if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('handleVolumeSliderClick failed', error); } catch (e) {}
@@ -288,7 +255,6 @@ class EventHandler {
                 this.ui.showError('再生中の曲がありません');
                 return;
             }
-            if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Sharing song', { album, song });
             await this.controller.shareLink(album, song, e && e.currentTarget ? e.currentTarget : null);
         } catch (err) {
             this.ui.showError('共有に失敗しました：' + (err && err.message ? err.message : String(err)));
@@ -306,10 +272,8 @@ class EventHandler {
         if (this.debounceTimers[key]) {
             clearTimeout(this.debounceTimers[key]);
         }
-        try { if (window && window.debug && typeof window.debug.info === 'function') window.debug.info(`Debounce scheduled: ${key} (${delay}ms)`); } catch (e) {}
         this.debounceTimers[key] = setTimeout(() => {
-            try { if (window && window.debug && typeof window.debug.info === 'function') window.debug.info(`Debounce executed: ${key}`); } catch (e) {}
-            try { func(); } catch (err) { console.error('Debounced function threw:', err); if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('debounced func error', err); }
+            try { func(); } catch (err) { console.error('Debounced function threw:', err); }
             delete this.debounceTimers[key];
         }, delay);
     }

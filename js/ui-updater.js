@@ -52,7 +52,6 @@ class UIUpdater {
                 }
             }
         });
-        if (window && window.debug) window.debug.log('replaceIcons executed');
     }
 
     /**
@@ -75,7 +74,6 @@ class UIUpdater {
             });
             select.appendChild(option);
         });
-        if (window && window.debug) window.debug.log('populateAlbumSelect', albums);
     }
 
     /**
@@ -243,7 +241,6 @@ class UIUpdater {
                 errorMessage.appendChild(textSpan);
             }
             errorMessage.classList.remove('d-none');
-            if (window && window.debug) window.debug.error('UI error', { message });
         }
     }
 
@@ -286,7 +283,6 @@ class UIUpdater {
                 errorMessage.classList.add('flash-error');
                 this.successTimeoutId = null;
             }, 3000);
-            if (window && window.debug) window.debug.log('UI success', { message });
         }
     }
 
