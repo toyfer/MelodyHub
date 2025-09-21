@@ -16,6 +16,10 @@ class AudioController {
      * @param {UIUpdater} [uiUpdater] - UI updater instance
      */
     constructor(audioElement, repoOwner = 'toyfer', repoName = 'MelodyHub', uiUpdater = null) {
+        if (!audioElement || !(audioElement instanceof HTMLAudioElement)) {
+            throw new Error('Invalid audio element provided');
+        }
+
         /** @type {HTMLAudioElement} The audio element being controlled */
         this.audio = audioElement;
         /** @type {boolean} Whether audio is currently playing */
@@ -34,6 +38,8 @@ class AudioController {
         this.repoName = repoName;
         /** @type {UIUpdater} UI updater instance */
         this.ui = uiUpdater;
+        /** @type {boolean} Whether currently loading/playing */
+        this.isLoading = false;
 
         this.bindEvents();
     }
@@ -44,9 +50,21 @@ class AudioController {
      */
     bindEvents() {
         if (this.audio) {
-            this.audio.addEventListener('loadedmetadata', () => this.onLoadedMetadata());
-            this.audio.addEventListener('timeupdate', () => this.onTimeUpdate());
-            this.audio.addEventListener('ended', () => this.onEnded());
+            this.audio.addEventListener('loadedmetadata', this.onLoadedMetadata.bind(this));
+            this.audio.addEventListener('timeupdate', this.onTimeUpdate.bind(this));
+            this.audio.addEventListener('ended', this.onEnded.bind(this));
+        }
+    }
+
+    /**
+     * Removes event listeners from the audio element.
+     * Should be called when the controller is destroyed.
+     */
+    removeEventListeners() {
+        if (this.audio) {
+            this.audio.removeEventListener('loadedmetadata', this.onLoadedMetadata);
+            this.audio.removeEventListener('timeupdate', this.onTimeUpdate);
+            this.audio.removeEventListener('ended', this.onEnded);
         }
     }
 
@@ -62,28 +80,38 @@ class AudioController {
      */
     async playSong(album, song, demoMode = false) {
         if (!this.audio) return false;
+        if (this.isLoading) {
+            console.warn('Already loading a song, skipping');
+            return false;
+        }
 
+        this.isLoading = true;
         this.currentlyPlaying = { album, song };
 
         if (demoMode) {
+            this.isLoading = false;
             return true; // Demo mode handled elsewhere
         }
-
-        const localPath = `${album}/${song}`;
-        const encodedRemotePath = `https://raw.githubusercontent.com/${this.repoOwner}/${this.repoName}/main/${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
 
         this.reset();
 
         try {
+            const localPath = `${album}/${song}`;
             this.audio.src = localPath;
             await this.audio.play();
+            this.isPlaying = true;
+            this.isLoading = false;
             return true;
         } catch (err) {
             try {
+                const encodedRemotePath = `https://raw.githubusercontent.com/${this.repoOwner}/${this.repoName}/main/${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
                 this.audio.src = encodedRemotePath;
                 await this.audio.play();
+                this.isPlaying = true;
+                this.isLoading = false;
                 return true;
             } catch (remoteErr) {
+                this.isLoading = false;
                 throw remoteErr;
             }
         }
@@ -105,7 +133,7 @@ class AudioController {
      * @returns {Promise<void>}
      */
     async resume() {
-        if (this.audio) {
+        if (this.audio && !this.isLoading) {
             await this.audio.play();
             this.isPlaying = true;
         }
@@ -193,7 +221,7 @@ class AudioController {
      * @private
      */
     onLoadedMetadata() {
-        if (this.ui) {
+        if (this.ui && typeof this.ui.setDuration === 'function') {
             this.ui.setDuration();
         }
     }
@@ -204,7 +232,7 @@ class AudioController {
      * @private
      */
     onTimeUpdate() {
-        if (this.ui) {
+        if (this.ui && typeof this.ui.updateProgress === 'function') {
             this.ui.updateProgress();
         }
     }
@@ -218,7 +246,9 @@ class AudioController {
         this.isPlaying = false;
         try {
             document.title = this.originalTitle;
-        } catch (e) {}
+        } catch (err) {
+            console.error('Error restoring document title:', err);
+        }
     }
 }
 

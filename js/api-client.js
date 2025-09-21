@@ -31,39 +31,46 @@ class APIClient {
      * @returns {Promise<string[]>} Array of album names
      */
     async fetchAlbumList() {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const maxRetries = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-        try {
-            console.log('Fetching albums from GitHub API:', this.baseUrl);
-            const response = await fetch(this.baseUrl, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
+            try {
+                console.log(`Fetching albums from GitHub API (attempt ${attempt}):`, this.baseUrl);
+                const response = await fetch(this.baseUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
 
-            const data = await response.json();
-            console.log('GitHub API response:', data);
+                const data = await response.json();
+                console.log('GitHub API response:', data);
 
-            const albums = data
-                .filter(item => item.type === 'dir')
-                .map(item => item.name)
-                .filter(name => name !== 'css' && name !== 'js');
+                const albums = data
+                    .filter(item => item.type === 'dir')
+                    .map(item => item.name)
+                    .filter(name => name !== 'css' && name !== 'js');
 
-            // アルバムが見つかった場合はGitHubデータを返す
-            if (albums.length > 0) {
-                console.log('Using GitHub albums:', albums);
-                return albums;
+                // アルバムが見つかった場合はGitHubデータを返す
+                if (albums.length > 0) {
+                    console.log('Using GitHub albums:', albums);
+                    return albums;
+                }
+
+                throw new Error('No albums found in repository');
+            } catch (err) {
+                clearTimeout(timeoutId);
+                if (err.name === 'AbortError') {
+                    console.warn(`Fetch request timed out on attempt ${attempt}`);
+                } else {
+                    console.warn(`GitHub API failed on attempt ${attempt}:`, err.message);
+                }
+                if (attempt === maxRetries) {
+                    // APIが失敗したらデモデータを使用
+                    return ['monsterhunter', 'classical', 'jazz', 'electronic'];
+                }
+                // Wait before retry
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
             }
-
-            throw new Error('No albums found in repository');
-        } catch (err) {
-            clearTimeout(timeoutId);
-            if (err.name === 'AbortError') {
-                console.warn('Fetch request timed out');
-            } else {
-                console.warn('GitHub API failed, using demo data:', err.message);
-            }
-            // APIが失敗したらデモデータを使用
-            return ['monsterhunter', 'classical', 'jazz', 'electronic'];
         }
     }
 
@@ -75,45 +82,55 @@ class APIClient {
      * @returns {Promise<string[]>} Array of song filenames
      */
     async fetchSongList(album) {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        if (!album || typeof album !== 'string' || album.trim() === '') {
+            throw new Error('Invalid album name provided');
+        }
 
-        try {
-            console.log(`Fetching songs for album: ${album} from GitHub API`);
-            const response = await fetch(`${this.baseUrl}${album}`, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
+        const maxRetries = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-            const data = await response.json();
-            console.log(`GitHub API response for ${album}:`, data);
+            try {
+                console.log(`Fetching songs for album: ${album} from GitHub API (attempt ${attempt})`);
+                const response = await fetch(`${this.baseUrl}${album}`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
 
-            const songs = data
-                .filter(item => item.type === 'file' && this.isAudioFile(item.name))
-                .map(item => item.name);
+                const data = await response.json();
+                console.log(`GitHub API response for ${album}:`, data);
 
-            // 曲が見つかった場合はGitHubデータを返す
-            if (songs.length > 0) {
-                console.log(`Using GitHub songs for ${album}:`, songs);
-                return songs;
+                const songs = data
+                    .filter(item => item.type === 'file' && this.isAudioFile(item.name))
+                    .map(item => item.name);
+
+                // 曲が見つかった場合はGitHubデータを返す
+                if (songs.length > 0) {
+                    console.log(`Using GitHub songs for ${album}:`, songs);
+                    return songs;
+                }
+
+                throw new Error(`No songs found in album ${album}`);
+            } catch (err) {
+                clearTimeout(timeoutId);
+                if (err.name === 'AbortError') {
+                    console.warn(`Fetch request for ${album} timed out on attempt ${attempt}`);
+                } else {
+                    console.warn(`GitHub API failed for ${album} on attempt ${attempt}:`, err.message);
+                }
+                if (attempt === maxRetries) {
+                    // APIが失敗したらデモデータを使用
+                    const demoSongs = {
+                        'monsterhunter': ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'],
+                        'classical': ['Beethoven - Symphony No. 9.mp3', 'Mozart - Piano Sonata K331.mp3', 'Bach - Brandenburg Concerto No. 3.mp3'],
+                        'jazz': ['Miles Davis - Kind of Blue.mp3', 'John Coltrane - Giant Steps.mp3', 'Bill Evans - Waltz for Debby.mp3'],
+                        'electronic': ['Ambient Journey.mp3', 'Digital Dreams.mp3', 'Synthwave Nights.mp3']
+                    };
+                    return demoSongs[album] || [];
+                }
+                // Wait before retry
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
             }
-
-            throw new Error(`No songs found in album ${album}`);
-        } catch (err) {
-            clearTimeout(timeoutId);
-            if (err.name === 'AbortError') {
-                console.warn(`Fetch request for ${album} timed out`);
-            } else {
-                console.warn(`GitHub API failed for ${album}, using demo data:`, err.message);
-            }
-
-            // APIが失敗したらデモデータを使用
-            const demoSongs = {
-                'monsterhunter': ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'],
-                'classical': ['Beethoven - Symphony No. 9.mp3', 'Mozart - Piano Sonata K331.mp3', 'Bach - Brandenburg Concerto No. 3.mp3'],
-                'jazz': ['Miles Davis - Kind of Blue.mp3', 'John Coltrane - Giant Steps.mp3', 'Bill Evans - Waltz for Debby.mp3'],
-                'electronic': ['Ambient Journey.mp3', 'Digital Dreams.mp3', 'Synthwave Nights.mp3']
-            };
-            return demoSongs[album] || [];
         }
     }    /**
      * Checks if a filename represents an audio file based on its extension.

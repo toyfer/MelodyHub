@@ -27,6 +27,11 @@ class EventHandler {
         this.ui = uiUpdater;
         /** @type {Object} App controller with shared functions */
         this.controller = appController;
+        /** @type {boolean} Whether currently processing an album change */
+        this.isChangingAlbum = false;
+        /** @type {Object<string, number>} Debounce timers */
+        this.debounceTimers = {};
+
         this.setupEventListeners();
     }
 
@@ -36,7 +41,7 @@ class EventHandler {
      * @private
      */
     setupEventListeners() {
-        const elements = [
+        this.eventListeners = [
             { id: 'album-select', event: 'change', handler: this.handleAlbumChange.bind(this) },
             { id: 'play-pause-btn', event: 'click', handler: this.handlePlayPause.bind(this) },
             { id: 'volume-btn', event: 'click', handler: this.handleVolumeClick.bind(this) },
@@ -45,7 +50,7 @@ class EventHandler {
             { id: 'share-current-song', event: 'click', handler: this.handleShareCurrentSong.bind(this) }
         ];
 
-        elements.forEach(({ id, event, handler }) => {
+        this.eventListeners.forEach(({ id, event, handler }) => {
             const element = this.dom.getElement(id);
             if (element) {
                 element.addEventListener(event, handler);
@@ -55,8 +60,31 @@ class EventHandler {
         // Song list click handler
         const songItems = this.dom.getElement('song-items');
         if (songItems) {
-            songItems.addEventListener('click', this.handleSongClick.bind(this));
+            this.songListHandler = this.handleSongClick.bind(this);
+            songItems.addEventListener('click', this.songListHandler);
         }
+    }
+
+    /**
+     * Removes all event listeners.
+     * Should be called when the handler is destroyed.
+     */
+    removeEventListeners() {
+        this.eventListeners.forEach(({ id, event, handler }) => {
+            const element = this.dom.getElement(id);
+            if (element) {
+                element.removeEventListener(event, handler);
+            }
+        });
+
+        const songItems = this.dom.getElement('song-items');
+        if (songItems && this.songListHandler) {
+            songItems.removeEventListener('click', this.songListHandler);
+        }
+
+        // Clear debounce timers
+        Object.values(this.debounceTimers).forEach(timer => clearTimeout(timer));
+        this.debounceTimers = {};
     }
 
     /**
@@ -65,6 +93,11 @@ class EventHandler {
      * @async
      */
     async handleAlbumChange() {
+        if (this.isChangingAlbum) {
+            console.warn('Already changing album, skipping');
+            return;
+        }
+
         const select = this.dom.getElement('album-select');
         const selectedAlbum = select ? select.value : '';
         if (!selectedAlbum) {
@@ -72,6 +105,7 @@ class EventHandler {
             return;
         }
 
+        this.isChangingAlbum = true;
         const songItems = this.dom.getElement('song-items');
         if (songItems) {
             songItems.innerHTML = '<li class="loading">楽曲を読み込み中...</li>';
@@ -84,6 +118,8 @@ class EventHandler {
         } catch (error) {
             this.ui.showError('曲リストの取得に失敗しました');
             this.dom.setStyle(this.dom.getElement('song-list'), { display: 'none' });
+        } finally {
+            this.isChangingAlbum = false;
         }
     }
 
@@ -93,6 +129,11 @@ class EventHandler {
      * @param {Event} e - The click event
      */
     handleSongClick(e) {
+        if (!e || !e.target || !(e.target instanceof Element)) {
+            console.error('Invalid event or target');
+            return;
+        }
+
         try {
             const li = e.target.closest('li');
             if (!li || li.classList.contains('empty-state')) return;
@@ -115,20 +156,22 @@ class EventHandler {
      * @async
      */
     async handlePlayPause() {
-        try {
-            if (this.audio.isPlaying) {
-                this.audio.pause();
-                this.ui.showAllSections();
-            } else {
-                await this.audio.resume();
-                this.ui.hideNonPlayerSections();
+        this.debounce('playPause', async () => {
+            try {
+                if (this.audio.isPlaying) {
+                    this.audio.pause();
+                    this.ui.showAllSections();
+                } else {
+                    await this.audio.resume();
+                    this.ui.hideNonPlayerSections();
+                }
+                this.ui.updatePlayPauseButton();
+            } catch (error) {
+                this.ui.showError(error.message || '音声の再生に失敗しました');
+                this.audio.isPlaying = false;
+                this.ui.updatePlayPauseButton();
             }
-            this.ui.updatePlayPauseButton();
-        } catch (error) {
-            this.ui.showError(error.message || '音声の再生に失敗しました');
-            this.audio.isPlaying = false;
-            this.ui.updatePlayPauseButton();
-        }
+        });
     }
 
     /**
@@ -136,12 +179,14 @@ class EventHandler {
      * Toggles mute state of the audio.
      */
     handleVolumeClick() {
-        try {
-            this.audio.toggleMute();
-            this.ui.updateVolumeButton();
-        } catch (error) {
-            this.ui.showError('音量設定に失敗しました: ' + error.message);
-        }
+        this.debounce('volumeClick', () => {
+            try {
+                this.audio.toggleMute();
+                this.ui.updateVolumeButton();
+            } catch (error) {
+                this.ui.showError('音量設定に失敗しました: ' + error.message);
+            }
+        });
     }
 
     /**
@@ -193,13 +238,19 @@ class EventHandler {
     }
 
     /**
-     * Handles clicks on the share current song button.
-     * Generates and copies a shareable link for the currently playing song.
+     * Debounces a function call.
+     * @param {string} key - Unique key for the debounce timer
+     * @param {Function} func - Function to debounce
+     * @param {number} delay - Delay in milliseconds
      */
-    handleShareCurrentSong() {
-        if (this.audio.currentlyPlaying.album && this.audio.currentlyPlaying.song) {
-            this.controller.shareLink(this.audio.currentlyPlaying.album, this.audio.currentlyPlaying.song);
+    debounce(key, func, delay = 300) {
+        if (this.debounceTimers[key]) {
+            clearTimeout(this.debounceTimers[key]);
         }
+        this.debounceTimers[key] = setTimeout(() => {
+            func();
+            delete this.debounceTimers[key];
+        }, delay);
     }
 }
 

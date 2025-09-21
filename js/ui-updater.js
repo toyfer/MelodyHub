@@ -18,6 +18,8 @@ class UIUpdater {
         this.dom = domManager;
         /** @type {AudioController} Audio controller for state information */
         this.audio = audioController;
+        /** @type {number|null} Timeout ID for success message auto-hide */
+        this.successTimeoutId = null;
         /** @type {Object<string, string>} SVG icon definitions */
         this.svgIcons = {
             'icon-play': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',
@@ -37,12 +39,20 @@ class UIUpdater {
         iconElements.forEach(element => {
             const iconClass = Array.from(element.classList).find(cls => cls.startsWith('icon-'));
             if (iconClass && this.svgIcons[iconClass]) {
-                const tempDiv = this.dom.createElement('div');
-                tempDiv.innerHTML = this.svgIcons[iconClass];
-                const svgElement = tempDiv.firstElementChild;
-                svgElement.className = element.className;
-                if (element.parentNode) {
-                    element.parentNode.replaceChild(svgElement, element);
+                try {
+                    const parser = new DOMParser();
+                    const svgDoc = parser.parseFromString(this.svgIcons[iconClass], 'image/svg+xml');
+                    const svgElement = svgDoc.documentElement;
+                    if (svgElement.tagName.toLowerCase() === 'svg') {
+                        svgElement.className = element.className;
+                        if (element.parentNode) {
+                            element.parentNode.replaceChild(svgElement, element);
+                        }
+                    } else {
+                        console.error('Invalid SVG content for icon:', iconClass);
+                    }
+                } catch (error) {
+                    console.error('Error parsing SVG for icon:', iconClass, error);
                 }
             }
         });
@@ -78,7 +88,9 @@ class UIUpdater {
         songItems.innerHTML = '';
         if (songs.length === 0) {
             const li = this.dom.createElement('li', { className: 'empty-state' });
-            li.innerHTML = '<span class="icon icon-folder" style="margin-right: 0.5rem;"></span>このアルバムには曲がありません';
+            const iconSpan = this.dom.createElement('span', { class: 'icon icon-folder', style: 'margin-right: 0.5rem;' });
+            li.appendChild(iconSpan);
+            li.appendChild(document.createTextNode('このアルバムには曲がありません'));
             songItems.appendChild(li);
         } else {
             songs.forEach(song => {
@@ -92,7 +104,8 @@ class UIUpdater {
                     className: 'song-share-button',
                     title: 'この曲のリンクをコピー'
                 });
-                shareBtn.innerHTML = '<span class="icon icon-share"></span>';
+                const shareIcon = this.dom.createElement('span', { class: 'icon icon-share' });
+                shareBtn.appendChild(shareIcon);
 
                 li.appendChild(songTitle);
                 li.appendChild(shareBtn);
@@ -111,10 +124,12 @@ class UIUpdater {
         const nowPlaying = this.dom.getElement('now-playing');
         if (nowPlaying) {
             const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-            nowPlaying.innerHTML = cleanSongName;
+            nowPlaying.textContent = cleanSongName;
             try {
                 document.title = `${cleanSongName} — ${this.audio.originalTitle}`;
-            } catch (err) {}
+            } catch (err) {
+                console.error('Error updating document title:', err);
+            }
         }
     }
 
@@ -206,13 +221,23 @@ class UIUpdater {
      * @param {string} message - The error message to display
      */
     showError(message) {
+        if (!message || typeof message !== 'string') {
+            console.error('Invalid message provided to showError');
+            return;
+        }
         const errorMessage = this.dom.getElement('error-message');
         if (errorMessage) {
             const errorText = errorMessage.querySelector('.error-text');
             if (errorText) {
                 errorText.textContent = message;
             } else {
-                errorMessage.innerHTML = `<span class="icon icon-warning"></span><span class="error-text">${message}</span>`;
+                // Create safe elements
+                errorMessage.innerHTML = '';
+                const iconSpan = this.dom.createElement('span', { class: 'icon icon-warning' });
+                const textSpan = this.dom.createElement('span', { class: 'error-text' });
+                textSpan.textContent = message;
+                errorMessage.appendChild(iconSpan);
+                errorMessage.appendChild(textSpan);
             }
             this.dom.setStyle(errorMessage, { display: 'flex' });
         }
@@ -224,19 +249,35 @@ class UIUpdater {
      * @param {string} message - The success message to display
      */
     showSuccess(message) {
+        if (!message || typeof message !== 'string') {
+            console.error('Invalid message provided to showSuccess');
+            return;
+        }
         const errorMessage = this.dom.getElement('error-message');
         if (errorMessage) {
+            // Clear any existing timeout
+            if (this.successTimeoutId) {
+                clearTimeout(this.successTimeoutId);
+            }
+
             const errorText = errorMessage.querySelector('.error-text');
             if (errorText) {
                 errorText.textContent = message;
             } else {
-                errorMessage.innerHTML = `<span class="icon icon-check"></span><span class="error-text">${message}</span>`;
+                // Create safe elements
+                errorMessage.innerHTML = '';
+                const iconSpan = this.dom.createElement('span', { class: 'icon icon-check' });
+                const textSpan = this.dom.createElement('span', { class: 'error-text' });
+                textSpan.textContent = message;
+                errorMessage.appendChild(iconSpan);
+                errorMessage.appendChild(textSpan);
             }
             errorMessage.className = 'error-message success-message';
             this.dom.setStyle(errorMessage, { display: 'flex' });
-            setTimeout(() => {
+            this.successTimeoutId = setTimeout(() => {
                 this.dom.setStyle(errorMessage, { display: 'none' });
                 errorMessage.className = 'error-message';
+                this.successTimeoutId = null;
             }, 3000);
         }
     }
@@ -245,7 +286,7 @@ class UIUpdater {
      * Hides the album selector and song list sections.
      */
     hideNonPlayerSections() {
-        const albumSelector = document.getElementById('album-selector');
+        const albumSelector = this.dom.getElement('album-selector');
         const songList = this.dom.getElement('song-list');
         if (albumSelector) albumSelector.style.display = 'none';
         if (songList) songList.style.display = 'none';
@@ -255,7 +296,7 @@ class UIUpdater {
      * Shows all sections (album selector and song list).
      */
     showAllSections() {
-        const albumSelector = document.getElementById('album-selector');
+        const albumSelector = this.dom.getElement('album-selector');
         const songList = this.dom.getElement('song-list');
         if (albumSelector) albumSelector.style.display = 'block';
         if (songList) songList.style.display = 'block';

@@ -46,7 +46,11 @@ class DOMManager {
         ];
 
         elementIds.forEach(id => {
-            this.elements[id] = document.getElementById(id);
+            const element = document.getElementById(id);
+            if (!element) {
+                console.warn(`DOM element with ID '${id}' not found`);
+            }
+            this.elements[id] = element;
         });
     }
 
@@ -65,7 +69,16 @@ class DOMManager {
      * @returns {Element|null} The first matching element or null
      */
     querySelector(selector) {
-        return document.querySelector(selector);
+        if (!selector || typeof selector !== 'string') {
+            console.error('Invalid selector provided to querySelector');
+            return null;
+        }
+        try {
+            return document.querySelector(selector);
+        } catch (error) {
+            console.error('Error in querySelector:', error);
+            return null;
+        }
     }
 
     /**
@@ -74,7 +87,16 @@ class DOMManager {
      * @returns {NodeList} A NodeList of matching elements
      */
     querySelectorAll(selector) {
-        return document.querySelectorAll(selector);
+        if (!selector || typeof selector !== 'string') {
+            console.error('Invalid selector provided to querySelectorAll');
+            return document.querySelectorAll(''); // empty NodeList
+        }
+        try {
+            return document.querySelectorAll(selector);
+        } catch (error) {
+            console.error('Error in querySelectorAll:', error);
+            return document.querySelectorAll(''); // empty NodeList
+        }
     }
 
     /**
@@ -84,22 +106,31 @@ class DOMManager {
      * @returns {HTMLElement} The newly created element
      */
     createElement(tagName, attributes = {}) {
+        if (!tagName || typeof tagName !== 'string') {
+            throw new Error('Invalid tagName provided to createElement');
+        }
         const element = document.createElement(tagName);
+        const dangerousAttributes = ['innerHTML', 'outerHTML', 'onclick', 'onload', 'onerror', 'onmouseover', 'onmouseout'];
         Object.keys(attributes).forEach(attr => {
-            element[attr] = attributes[attr];
+            if (dangerousAttributes.includes(attr.toLowerCase())) {
+                console.warn(`Skipping dangerous attribute: ${attr}`);
+                return;
+            }
+            try {
+                element.setAttribute(attr, attributes[attr]);
+            } catch (error) {
+                console.error(`Error setting attribute ${attr}:`, error);
+            }
         });
         return element;
     }
 
     /**
-     * Applies CSS styles to a DOM element.
-     * @param {HTMLElement} element - The element to style
-     * @param {Object<string, string>} styles - Object containing CSS property-value pairs
+     * Refreshes the cached DOM elements.
+     * Useful when the DOM has been dynamically updated.
      */
-    setStyle(element, styles) {
-        if (element) {
-            Object.assign(element.style, styles);
-        }
+    refreshElements() {
+        this.initElements();
     }
 }
 
