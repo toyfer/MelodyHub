@@ -166,7 +166,7 @@ class UIUpdater {
         if (btn) {
             const icon = btn.querySelector('.icon');
             if (icon) {
-                icon.className = this.audio.isPlaying ? 'icon icon-pause' : 'icon icon-play';
+                icon.setAttribute('class', this.audio.isPlaying ? 'icon icon-pause' : 'icon icon-play');
             }
         }
     }
@@ -179,7 +179,7 @@ class UIUpdater {
         if (btn) {
             const icon = btn.querySelector('.icon');
             if (icon) {
-                icon.className = (this.audio.isMuted || this.audio.currentVolume === 0) ? 'icon icon-volume-muted' : 'icon icon-volume';
+                icon.setAttribute('class', (this.audio.isMuted || this.audio.currentVolume === 0) ? 'icon icon-volume-muted' : 'icon icon-volume');
             }
         }
     }
