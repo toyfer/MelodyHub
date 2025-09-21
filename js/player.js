@@ -1,364 +1,347 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const albumSelect = document.getElementById('album-select');
-    const songList = document.getElementById('song-list');
-    const songItems = document.getElementById('song-items');
-    const audioPlayer = document.getElementById('audio-player');
-    const audio = document.getElementById('audio');
-    const nowPlaying = document.getElementById('now-playing');
-    const errorMessage = document.getElementById('error-message');
-    const shareCurrentSongBtn = document.getElementById('share-current-song');
+/**
+ * MelodyHub Music Player
+ * A web-based music player for GitHub-hosted audio files
+ */
 
-    // Custom Audio Player Controls
-    const playPauseBtn = document.getElementById('play-pause-btn');
-    const currentTimeDisplay = document.getElementById('current-time');
-    const durationDisplay = document.getElementById('duration');
-    const progressBar = document.getElementById('progress-bar');
-    const progressFill = document.getElementById('progress-fill');
-    const progressHandle = document.getElementById('progress-handle');
-    const volumeBtn = document.getElementById('volume-btn');
-    const volumeSlider = document.getElementById('volume-slider');
-    const volumeFill = document.getElementById('volume-fill');
-    const volumeHandle = document.getElementById('volume-handle');
+class MelodyPlayer {
+    constructor() {
+        // DOM Elements
+        this.albumSelect = document.getElementById('album-select');
+        this.songList = document.getElementById('song-list');
+        this.songItems = document.getElementById('song-items');
+        this.audioPlayer = document.getElementById('audio-player');
+        this.audio = document.getElementById('audio');
+        this.nowPlaying = document.getElementById('now-playing');
+        this.errorMessage = document.getElementById('error-message');
+        this.shareCurrentSongBtn = document.getElementById('share-current-song');
 
-    // Audio Player State
-    let isPlaying = false;
-    let isMuted = false;
-    let currentVolume = 0.7;
+        // Player Controls
+        this.playPauseBtn = document.getElementById('play-pause-btn');
+        this.currentTimeDisplay = document.getElementById('current-time');
+        this.durationDisplay = document.getElementById('duration');
+        this.progressBar = document.getElementById('progress-bar');
+        this.progressFill = document.getElementById('progress-fill');
+        this.progressHandle = document.getElementById('progress-handle');
+        this.volumeBtn = document.getElementById('volume-btn');
+        this.volumeSlider = document.getElementById('volume-slider');
+        this.volumeFill = document.getElementById('volume-fill');
+        this.volumeHandle = document.getElementById('volume-handle');
 
-    // GitHubリポジトリ情報（適宜変更）
-    const repoOwner = 'toyfer'; // GitHubユーザー名
-    const repoName = 'MelodyHub'; // リポジトリ名
-    const baseUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
-    
-    // Demo mode flag - set to true for offline demo
-    const DEMO_MODE = false;
+        // State
+        this.isPlaying = false;
+        this.isMuted = false;
+        this.currentVolume = 0.7;
+        this.currentlyPlaying = { album: null, song: null };
 
-    // Store currently playing song info for sharing
-    let currentlyPlaying = { album: null, song: null };
+        // Configuration
+        this.repoOwner = 'toyfer';
+        this.repoName = 'MelodyHub';
+        this.baseUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/contents/`;
+        this.demoMode = false;
 
-    // Audio element validation function
-    function validateAudioElement() {
-        if (!audio) {
-            throw new Error('オーディオ要素が見つかりません');
-        }
-        return true;
+        // Audio extensions
+        this.audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac'];
+
+        // Bind methods
+        this.init = this.init.bind(this);
+        this.handleAlbumChange = this.handleAlbumChange.bind(this);
+        this.handleSongClick = this.handleSongClick.bind(this);
+        this.handlePlayPause = this.handlePlayPause.bind(this);
+        this.handleVolumeClick = this.handleVolumeClick.bind(this);
+        this.handleProgressClick = this.handleProgressClick.bind(this);
+        this.handleVolumeSliderClick = this.handleVolumeSliderClick.bind(this);
+        this.handleShareCurrentSong = this.handleShareCurrentSong.bind(this);
+        this.handleAudioLoadedMetadata = this.handleAudioLoadedMetadata.bind(this);
+        this.handleAudioTimeUpdate = this.handleAudioTimeUpdate.bind(this);
+        this.handleAudioEnded = this.handleAudioEnded.bind(this);
     }
 
-    // アルバムリストをGitHub APIから取得
-    async function fetchAlbumList() {
-        if (DEMO_MODE) {
-            // Demo data for testing UI
+    /**
+     * Initialize the player
+     */
+    async init() {
+        this.setupEventListeners();
+        this.audio.volume = this.currentVolume;
+        this.updatePlayPauseButton();
+        this.updateVolumeButton();
+
+        const albums = await this.fetchAlbumList();
+        this.handleUrlParameters(albums);
+    }
+
+    /**
+     * Setup all event listeners
+     */
+    setupEventListeners() {
+        this.albumSelect.addEventListener('change', this.handleAlbumChange);
+        this.playPauseBtn.addEventListener('click', this.handlePlayPause);
+        this.volumeBtn.addEventListener('click', this.handleVolumeClick);
+        this.progressBar.addEventListener('click', this.handleProgressClick);
+        this.volumeSlider.addEventListener('click', this.handleVolumeSliderClick);
+        this.shareCurrentSongBtn.addEventListener('click', this.handleShareCurrentSong);
+
+        this.audio.addEventListener('loadedmetadata', this.handleAudioLoadedMetadata);
+        this.audio.addEventListener('timeupdate', this.handleAudioTimeUpdate);
+        this.audio.addEventListener('ended', this.handleAudioEnded);
+    }
+
+    /**
+     * Fetch album list from GitHub API
+     */
+    async fetchAlbumList() {
+        if (this.demoMode) {
             const demoAlbums = ['monsterhunter', 'classical', 'jazz', 'electronic'];
-            demoAlbums.forEach(album => {
-                const option = document.createElement('option');
-                option.value = album;
-                option.textContent = album.charAt(0).toUpperCase() + album.slice(1);
-                albumSelect.appendChild(option);
-            });
+            this.populateAlbumSelect(demoAlbums);
             return demoAlbums;
         }
-        
+
         try {
-            const response = await fetch(baseUrl);
+            const response = await fetch(this.baseUrl);
             if (!response.ok) {
-                // Fallback to local albums if API fails
                 const localAlbums = ['monsterhunter'];
-                localAlbums.forEach(album => {
-                    const option = document.createElement('option');
-                    option.value = album;
-                    option.textContent = album.charAt(0).toUpperCase() + album.slice(1);
-                    albumSelect.appendChild(option);
-                });
+                this.populateAlbumSelect(localAlbums);
                 return localAlbums;
             }
-            
+
             const data = await response.json();
-            // ディレクトリのみをフィルタリング
             const albums = data.filter(item => item.type === 'dir').map(item => item.name);
-            
-            // アルバム選択メニューを生成
-            albums.forEach(album => {
-                const option = document.createElement('option');
-                option.value = album;
-                option.textContent = album;
-                albumSelect.appendChild(option);
-            });
-            
+            this.populateAlbumSelect(albums);
             return albums;
         } catch (error) {
-            // Fallback to local albums if API fails
             const localAlbums = ['monsterhunter'];
-            localAlbums.forEach(album => {
-                const option = document.createElement('option');
-                option.value = album;
-                option.textContent = album.charAt(0).toUpperCase() + album.slice(1);
-                albumSelect.appendChild(option);
-            });
+            this.populateAlbumSelect(localAlbums);
             return localAlbums;
         }
     }
 
-    // アルバム内の曲リストを取得
-    async function fetchSongList(album) {
-        if (DEMO_MODE) {
-            // Demo data for different albums
+    /**
+     * Populate album select dropdown
+     */
+    populateAlbumSelect(albums) {
+        albums.forEach(album => {
+            const option = document.createElement('option');
+            option.value = album;
+            option.textContent = album.charAt(0).toUpperCase() + album.slice(1);
+            this.albumSelect.appendChild(option);
+        });
+    }
+
+    /**
+     * Fetch song list for an album
+     */
+    async fetchSongList(album) {
+        if (this.demoMode) {
             const demoSongs = {
-                'monsterhunter': [
-                    'Another Treat.mp3',
-                    '【#モンハン】もうひとつのお楽しみ きゅっきゅっきゅっニャー【 #MHP2G #shorts #vtuber】 (Cover).mp3',
-                    'Battle Theme - Rathalos.mp3',
-                    'Village Theme - Peaceful Days.mp3'
-                ],
-                'classical': [
-                    'Beethoven - Symphony No. 9.mp3',
-                    'Mozart - Piano Sonata K331.mp3',
-                    'Bach - Brandenburg Concerto No. 3.mp3'
-                ],
-                'jazz': [
-                    'Miles Davis - Kind of Blue.mp3',
-                    'John Coltrane - Giant Steps.mp3',
-                    'Bill Evans - Waltz for Debby.mp3'
-                ],
-                'electronic': [
-                    'Ambient Journey.mp3',
-                    'Digital Dreams.mp3',
-                    'Synthwave Nights.mp3'
-                ]
+                'monsterhunter': ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'],
+                'classical': ['Beethoven - Symphony No. 9.mp3', 'Mozart - Piano Sonata K331.mp3', 'Bach - Brandenburg Concerto No. 3.mp3'],
+                'jazz': ['Miles Davis - Kind of Blue.mp3', 'John Coltrane - Giant Steps.mp3', 'Bill Evans - Waltz for Debby.mp3'],
+                'electronic': ['Ambient Journey.mp3', 'Digital Dreams.mp3', 'Synthwave Nights.mp3']
             };
             return demoSongs[album] || [];
         }
-        
+
         try {
-            const response = await fetch(`${baseUrl}${album}`);
+            const response = await fetch(`${this.baseUrl}${album}`);
             if (!response.ok) {
-                // Fallback to local songs if API fails
                 if (album === 'monsterhunter') {
-                    return ['Another Treat.mp3', '【#モンハン】もうひとつのお楽しみ きゅっきゅっきゅっニャー【 #MHP2G #shorts #vtuber】 (Cover).mp3']; // Known local files
+                    return ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'];
                 }
                 throw new Error('曲リストの取得に失敗しました');
             }
-            
+
             const data = await response.json();
-            // オーディオファイルのみをフィルタリング（.mp3, .wav, .oggなど）
             const songs = data
-                .filter(item => item.type === 'file' && isAudioFile(item.name))
+                .filter(item => item.type === 'file' && this.isAudioFile(item.name))
                 .map(item => item.name);
-            
             return songs;
         } catch (error) {
-            // Fallback to local songs if API fails
             if (album === 'monsterhunter') {
-                return ['Another Treat.mp3', '【#モンハン】もうひとつのお楽しみ きゅっきゅっきゅっニャー【 #MHP2G #shorts #vtuber】 (Cover).mp3']; // Known local files
+                return ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'];
             }
-            showError('曲リストの取得に失敗しました');
+            this.showError('曲リストの取得に失敗しました');
             return [];
         }
     }
 
-    // オーディオファイルかどうかを判定
-    function isAudioFile(filename) {
-        const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac'];
-        return audioExtensions.some(ext => filename.toLowerCase().endsWith(ext));
+    /**
+     * Check if file is an audio file
+     */
+    isAudioFile(filename) {
+        return this.audioExtensions.some(ext => filename.toLowerCase().endsWith(ext));
     }
 
-    // アルバム選択時の処理
-    albumSelect.addEventListener('change', async () => {
-        const selectedAlbum = albumSelect.value;
+    /**
+     * Handle album selection change
+     */
+    async handleAlbumChange() {
+        const selectedAlbum = this.albumSelect.value;
         if (!selectedAlbum) {
-            songList.style.display = 'none';
-            audioPlayer.style.display = 'none';
+            this.songList.style.display = 'none';
+            this.audioPlayer.style.display = 'none';
             return;
         }
 
-        // Show loading state
-        songItems.innerHTML = '<li class="loading">楽曲を読み込み中...</li>';
-        songList.style.display = 'block';
+        this.songItems.innerHTML = '<li class="loading">楽曲を読み込み中...</li>';
+        this.songList.style.display = 'block';
 
         try {
-            const songs = await fetchSongList(selectedAlbum);
-            displaySongList(songs, selectedAlbum);
+            const songs = await this.fetchSongList(selectedAlbum);
+            this.displaySongList(songs, selectedAlbum);
         } catch (error) {
-            showError('曲リストの取得に失敗しました');
-            songList.style.display = 'none';
+            this.showError('曲リストの取得に失敗しました');
+            this.songList.style.display = 'none';
         }
-    });
+    }
 
-    // 曲リストを表示
-    function displaySongList(songs, album) {
-        songItems.innerHTML = '';
+    /**
+     * Display song list
+     */
+    displaySongList(songs, album) {
+        this.songItems.innerHTML = '';
         if (songs.length === 0) {
-            songItems.innerHTML = '<li class="empty-state"><span class="icon icon-folder" style="margin-right: 0.5rem;"></span>このアルバムには曲がありません</li>';
+            this.songItems.innerHTML = '<li class="empty-state"><span class="icon icon-folder" style="margin-right: 0.5rem;"></span>このアルバムには曲がありません</li>';
         } else {
             songs.forEach(song => {
                 const li = document.createElement('li');
-                
-                // Create song title span
                 const songTitle = document.createElement('span');
                 const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
                 songTitle.textContent = cleanSongName;
                 songTitle.style.flex = '1';
-                
-                // Create share button for individual songs
+
                 const shareBtn = document.createElement('button');
                 shareBtn.className = 'song-share-button';
                 shareBtn.innerHTML = '<span class="icon icon-share"></span>';
                 shareBtn.title = 'この曲のリンクをコピー';
                 shareBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent song from playing
-                    shareLink(album, song, shareBtn);
+                    e.stopPropagation();
+                    this.shareLink(album, song, shareBtn);
                 });
-                
+
                 li.appendChild(songTitle);
                 li.appendChild(shareBtn);
-                li.title = song; // Keep original filename in title for reference
-                li.addEventListener('click', () => playSong(album, song));
-                songItems.appendChild(li);
+                li.title = song;
+                li.addEventListener('click', () => this.handleSongClick(album, song));
+                this.songItems.appendChild(li);
             });
         }
-        songList.style.display = 'block';
+        this.songList.style.display = 'block';
     }
 
-    // 曲を再生
-    function playSong(album, song) {
-        // Validate audio element exists
-        if (!audio) {
-            showError('⚠️ オーディオプレイヤーが初期化されていません。ページを再読み込みしてください');
+    /**
+     * Handle song click
+     */
+    handleSongClick(album, song) {
+        this.playSong(album, song);
+    }
+
+    /**
+     * Play a song
+     */
+    playSong(album, song) {
+        if (!this.audio) {
+            this.showError('オーディオプレイヤーが初期化されていません。ページを再読み込みしてください');
             return;
         }
 
-        // Validate inputs
-        if (!album || typeof album !== 'string' || album.trim() === '') {
-            showError('⚠️ アルバム名が指定されていません');
-            return;
-        }
-        
-        if (!song || typeof song !== 'string' || song.trim() === '') {
-            showError('⚠️ 曲名が指定されていません');
+        if (!album || !song) {
+            this.showError('アルバム名または曲名が指定されていません');
             return;
         }
 
-        // Update currently playing info
-        currentlyPlaying = { album, song };
-        if (DEMO_MODE) {
-            // In demo mode, show the player interface without actual audio
+        this.currentlyPlaying = { album, song };
+
+        if (this.demoMode) {
             const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-            nowPlaying.innerHTML = cleanSongName;
-            
-            audioPlayer.style.display = 'block';
-            errorMessage.style.display = 'none';
-            
-            // Add visual feedback for currently playing song
-            document.querySelectorAll('#song-items li').forEach(li => {
-                li.classList.remove('playing');
-            });
-            
-            const playingLi = Array.from(document.querySelectorAll('#song-items li')).find(li => 
-                li.title === song
-            );
-            if (playingLi) {
-                playingLi.classList.add('playing');
-            }
-            
-            // Show demo message
+            this.nowPlaying.innerHTML = cleanSongName;
+            this.audioPlayer.style.display = 'block';
+            this.errorMessage.style.display = 'none';
+
+            this.updatePlayingVisual(song);
             setTimeout(() => {
-                showError('デモモードです。実際の音楽ファイルがあれば再生されます。');
+                this.showError('デモモードです。実際の音楽ファイルがあれば再生されます。');
             }, 1000);
-            
             return;
         }
-        
-        // Construct proper audio source URL with encoding for special characters
+
         const songPath = `${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
         console.log('Loading audio from:', songPath);
-        
-        // Set up error handlers before loading
+
+        this.resetAudioState();
+
         const handleLoadError = () => {
             const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-            showError(`🔍 音楽ファイルが見つかりません: ${cleanSongName}`);
+            this.showError(`音楽ファイルが見つかりません: ${cleanSongName}`);
         };
-        
+
         const handlePlayError = (error) => {
-            console.error('Audio playback failed:', error);
             let errorMessage = '音楽の再生に失敗しました';
-            
-            // Provide specific error messages based on error type
             if (error.name === 'NotSupportedError') {
-                errorMessage = '🎵 音楽ファイルの形式がサポートされていません。MP3、WAV、OGG形式をお試しください';
+                errorMessage = '音楽ファイルの形式がサポートされていません。MP3、WAV、OGG形式をお試しください';
             } else if (error.name === 'NotAllowedError') {
-                errorMessage = '🔇 ブラウザによって再生がブロックされました。ページをクリックしてから再試行してください';
+                errorMessage = 'ブラウザによって再生がブロックされました。ページをクリックしてから再試行してください';
             } else if (error.name === 'AbortError') {
-                errorMessage = '⏸️ 音楽の読み込みが中断されました。再度お試しください';
+                errorMessage = '音楽の読み込みが中断されました。再度お試しください';
             } else if (error.name === 'NetworkError') {
-                errorMessage = '🌐 ネットワークエラーが発生しました。接続を確認してください';
+                errorMessage = 'ネットワークエラーが発生しました。接続を確認してください';
             } else if (error.message && error.message.includes('404')) {
-                errorMessage = '🔍 音楽ファイルが見つかりません。ファイルが存在するか確認してください';
+                errorMessage = '音楽ファイルが見つかりません。ファイルが存在するか確認してください';
             } else if (error.message) {
                 errorMessage += `: ${error.message}`;
             }
-            
-            showError(errorMessage);
+            this.showError(errorMessage);
         };
-        
-        // Reset audio state properly before loading new track
+
+        this.audio.addEventListener('error', handleLoadError, { once: true });
+
         try {
-            audio.pause();
-            audio.currentTime = 0;
-            isPlaying = false;
-            updatePlayPauseButton();
-        } catch (resetError) {
-            console.warn('Error resetting audio state:', resetError);
-        }
-        
-        // Remove previous error handlers to avoid duplicate listeners
-        audio.removeEventListener('error', handleLoadError);
-        
-        // Add error handler for loading failures
-        audio.addEventListener('error', handleLoadError, { once: true });
-        
-        try {
-            // Set source and load audio
-            audio.src = songPath;
-            audio.load();
-            
-            // Attempt to play with proper error handling
-            const playPromise = audio.play();
-            
-            // Handle the Promise returned by play()
+            this.audio.src = songPath;
+            this.audio.load();
+
+            const playPromise = this.audio.play();
             if (playPromise !== undefined) {
                 playPromise
                     .then(() => {
-                        // Playback started successfully
-                        console.log('Audio playback started successfully');
-                        errorMessage.style.display = 'none';
-                        
-                        // Show brief success message
+                        this.errorMessage.style.display = 'none';
                         const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-                        showSuccess(`🎵 再生開始: ${cleanSongName}`);
+                        this.showSuccess(`再生開始: ${cleanSongName}`);
                     })
                     .catch(handlePlayError);
             }
-            
         } catch (error) {
-            // Handle synchronous errors
             handlePlayError(error);
             return;
         }
-        
-        // Update UI elements
+
         const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-        nowPlaying.innerHTML = cleanSongName;
-        
-        audioPlayer.style.display = 'block';
-        
-        // UX improvement: Hide other sections when music is playing
-        hideNonPlayerSections();
-        
-        // Add visual feedback for currently playing song
+        this.nowPlaying.innerHTML = cleanSongName;
+        this.audioPlayer.style.display = 'block';
+        this.hideNonPlayerSections();
+        this.updatePlayingVisual(song);
+    }
+
+    /**
+     * Reset audio state
+     */
+    resetAudioState() {
+        try {
+            this.audio.pause();
+            this.audio.currentTime = 0;
+            this.isPlaying = false;
+            this.updatePlayPauseButton();
+        } catch (resetError) {
+            console.warn('Error resetting audio state:', resetError);
+        }
+    }
+
+    /**
+     * Update visual feedback for currently playing song
+     */
+    updatePlayingVisual(song) {
         document.querySelectorAll('#song-items li').forEach(li => {
             li.classList.remove('playing');
         });
-        
-        const playingLi = Array.from(document.querySelectorAll('#song-items li')).find(li => 
+
+        const playingLi = Array.from(document.querySelectorAll('#song-items li')).find(li =>
             li.title === song
         );
         if (playingLi) {
@@ -366,257 +349,291 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // エラーメッセージ表示
-    function showError(message) {
-        const errorText = errorMessage.querySelector('.error-text');
+    /**
+     * Show error message
+     */
+    showError(message) {
+        const errorText = this.errorMessage.querySelector('.error-text');
         if (errorText) {
             errorText.textContent = message;
         } else {
-            errorMessage.innerHTML = `<span class="icon icon-warning"></span><span class="error-text">${message}</span>`;
+            this.errorMessage.innerHTML = `<span class="icon icon-warning"></span><span class="error-text">${message}</span>`;
         }
-        errorMessage.style.display = 'flex';
+        this.errorMessage.style.display = 'flex';
     }
 
-    // 成功メッセージ表示
-    function showSuccess(message) {
-        const errorText = errorMessage.querySelector('.error-text');
+    /**
+     * Show success message
+     */
+    showSuccess(message) {
+        const errorText = this.errorMessage.querySelector('.error-text');
         if (errorText) {
             errorText.textContent = message;
         } else {
-            errorMessage.innerHTML = `<span class="icon icon-check"></span><span class="error-text">${message}</span>`;
+            this.errorMessage.innerHTML = `<span class="icon icon-check"></span><span class="error-text">${message}</span>`;
         }
-        errorMessage.className = 'error-message success-message';
-        errorMessage.style.display = 'flex';
-        
-        // Auto-hide success message after 3 seconds
+        this.errorMessage.className = 'error-message success-message';
+        this.errorMessage.style.display = 'flex';
+
         setTimeout(() => {
-            errorMessage.style.display = 'none';
-            errorMessage.className = 'error-message';
+            this.errorMessage.style.display = 'none';
+            this.errorMessage.className = 'error-message';
         }, 3000);
     }
 
-    // Generate shareable URL
-    function generateShareableUrl(album, song) {
+    /**
+     * Generate shareable URL
+     */
+    generateShareableUrl(album, song) {
         const currentUrl = new URL(window.location);
         currentUrl.searchParams.set('album', album);
         currentUrl.searchParams.set('song', song);
         return currentUrl.toString();
     }
 
-    // Copy to clipboard and show feedback
-    async function shareLink(album, song, buttonElement = null) {
-        const shareUrl = generateShareableUrl(album, song);
-        
+    /**
+     * Share link
+     */
+    async shareLink(album, song, buttonElement = null) {
+        const shareUrl = this.generateShareableUrl(album, song);
+
         try {
             await navigator.clipboard.writeText(shareUrl);
-            showSuccess(`リンクをコピーしました: ${song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')}`);
-            
-            // Visual feedback on button
+            this.showSuccess(`リンクをコピーしました: ${song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')}`);
+
             if (buttonElement) {
                 const originalText = buttonElement.innerHTML;
                 buttonElement.innerHTML = '<span class="icon icon-check"></span>';
                 buttonElement.classList.add('copied');
-                
+
                 setTimeout(() => {
                     buttonElement.innerHTML = originalText;
                     buttonElement.classList.remove('copied');
                 }, 2000);
             }
         } catch (err) {
-            // Fallback for browsers that don't support clipboard API
-            showError('クリップボードへのアクセスができません。URLを手動でコピーしてください: ' + shareUrl);
+            this.showError('クリップボードへのアクセスができません。URLを手動でコピーしてください: ' + shareUrl);
         }
     }
 
-    // Validate URL parameters
-    function validateUrlParameters(album, song, availableAlbums) {
+    /**
+     * Handle URL parameters
+     */
+    async handleUrlParameters(albums) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialAlbum = urlParams.get('album');
+        const initialSong = urlParams.get('song');
+
+        if (initialAlbum && initialSong) {
+            const errors = this.validateUrlParameters(initialAlbum, initialSong, albums);
+            if (errors.length > 0) {
+                this.showError(errors.join(' / '));
+                return;
+            }
+
+            if (albums.includes(initialAlbum)) {
+                this.albumSelect.value = initialAlbum;
+                const songs = await this.fetchSongList(initialAlbum);
+
+                if (songs.includes(initialSong)) {
+                    this.displaySongList(songs, initialAlbum);
+                    this.playSong(initialAlbum, initialSong);
+                } else {
+                    this.displaySongList(songs, initialAlbum);
+                    this.showError(`指定された曲がアルバムに存在しません: ${initialSong}`);
+                }
+            } else {
+                this.showError(`指定されたアルバムが存在しません: ${initialAlbum}`);
+            }
+        }
+    }
+
+    /**
+     * Validate URL parameters
+     */
+    validateUrlParameters(album, song, availableAlbums) {
         const errors = [];
-        
+
         if (!album) {
             errors.push('アルバムが指定されていません');
         } else if (!availableAlbums.includes(album)) {
-            errors.push(`指定されたアルバム「${album}」が存在しません`);
+            errors.push(`指定されたアルバムが存在しません: ${album}`);
         }
-        
+
         if (!song) {
             errors.push('曲が指定されていません');
         }
-        
+
         return errors;
     }
 
-    // URLパラメータから初期再生曲を取得
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialAlbum = urlParams.get('album');
-    const initialSong = urlParams.get('song');
-
-    // 初期化処理
-    async function init() {
-        const albums = await fetchAlbumList();
-        
-        if (initialAlbum && initialSong) {
-            // Validate URL parameters
-            const errors = validateUrlParameters(initialAlbum, initialSong, albums);
-            
-            if (errors.length > 0) {
-                showError(errors.join(' / '));
-                return;
-            }
-            
-            // Check if album exists
-            if (albums.includes(initialAlbum)) {
-                albumSelect.value = initialAlbum;
-                const songs = await fetchSongList(initialAlbum);
-                
-                // Check if song exists in the album
-                if (songs.includes(initialSong)) {
-                    displaySongList(songs, initialAlbum);
-                    playSong(initialAlbum, initialSong);
-                } else {
-                    displaySongList(songs, initialAlbum);
-                    showError(`指定された曲「${initialSong.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')}」がアルバム「${initialAlbum}」に存在しません`);
-                }
-            } else {
-                showError(`指定されたアルバム「${initialAlbum}」が存在しません`);
-            }
-        }
-    }
-
-    // UX Functions for better experience
-    function hideNonPlayerSections() {
+    /**
+     * Hide non-player sections
+     */
+    hideNonPlayerSections() {
         document.getElementById('album-selector').style.display = 'none';
         document.getElementById('song-list').style.display = 'none';
     }
-    
-    function showAllSections() {
+
+    /**
+     * Show all sections
+     */
+    showAllSections() {
         document.getElementById('album-selector').style.display = 'block';
         document.getElementById('song-list').style.display = 'block';
     }
 
-    // Custom Audio Player Functions
-    function formatTime(seconds) {
+    /**
+     * Handle play/pause button click
+     */
+    async handlePlayPause() {
+        if (!this.audio) {
+            this.showError('オーディオプレイヤーが初期化されていません');
+            return;
+        }
+
+        try {
+            if (this.isPlaying) {
+                this.audio.pause();
+                this.isPlaying = false;
+                this.showAllSections();
+            } else {
+                await this.audio.play();
+                this.isPlaying = true;
+                this.hideNonPlayerSections();
+            }
+            this.updatePlayPauseButton();
+        } catch (error) {
+            console.error('Audio playback failed:', error);
+            this.showError(error.message || '音声の再生に失敗しました');
+            this.isPlaying = false;
+            this.updatePlayPauseButton();
+        }
+    }
+
+    /**
+     * Handle volume button click
+     */
+    handleVolumeClick() {
+        this.isMuted = !this.isMuted;
+        this.audio.muted = this.isMuted;
+        this.updateVolumeButton();
+    }
+
+    /**
+     * Handle progress bar click
+     */
+    handleProgressClick(e) {
+        if (this.audio.duration) {
+            const rect = this.progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const progress = clickX / rect.width;
+            this.audio.currentTime = progress * this.audio.duration;
+        }
+    }
+
+    /**
+     * Handle volume slider click
+     */
+    handleVolumeSliderClick(e) {
+        const rect = this.volumeSlider.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        this.currentVolume = Math.max(0, Math.min(1, clickX / rect.width));
+        this.isMuted = false;
+        this.audio.muted = false;
+        this.updateVolume();
+        this.updateVolumeButton();
+    }
+
+    /**
+     * Handle share current song button click
+     */
+    handleShareCurrentSong() {
+        if (this.currentlyPlaying.album && this.currentlyPlaying.song) {
+            this.shareLink(this.currentlyPlaying.album, this.currentlyPlaying.song, this.shareCurrentSongBtn);
+        }
+    }
+
+    /**
+     * Handle audio loaded metadata
+     */
+    handleAudioLoadedMetadata() {
+        this.durationDisplay.textContent = this.formatTime(this.audio.duration);
+        this.currentTimeDisplay.textContent = this.formatTime(0);
+        this.updateVolume();
+    }
+
+    /**
+     * Handle audio time update
+     */
+    handleAudioTimeUpdate() {
+        if (this.audio.duration) {
+            const progress = (this.audio.currentTime / this.audio.duration) * 100;
+            this.progressFill.style.width = `${progress}%`;
+            this.progressHandle.style.left = `${progress}%`;
+            this.currentTimeDisplay.textContent = this.formatTime(this.audio.currentTime);
+        }
+    }
+
+    /**
+     * Handle audio ended
+     */
+    handleAudioEnded() {
+        this.isPlaying = false;
+        this.updatePlayPauseButton();
+        this.progressFill.style.width = '0%';
+        this.progressHandle.style.left = '0%';
+        this.currentTimeDisplay.textContent = this.formatTime(0);
+        this.showAllSections();
+    }
+
+    /**
+     * Format time in seconds to MM:SS
+     */
+    formatTime(seconds) {
         if (isNaN(seconds)) return '0:00';
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = Math.floor(seconds % 60);
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 
-    function updatePlayPauseButton() {
-        const icon = playPauseBtn.querySelector('.icon');
-        if (isPlaying) {
+    /**
+     * Update play/pause button
+     */
+    updatePlayPauseButton() {
+        const icon = this.playPauseBtn.querySelector('.icon');
+        if (this.isPlaying) {
             icon.className = 'icon icon-pause';
         } else {
             icon.className = 'icon icon-play';
         }
     }
 
-    function updateVolumeButton() {
-        const icon = volumeBtn.querySelector('.icon');
-        if (isMuted || currentVolume === 0) {
+    /**
+     * Update volume button
+     */
+    updateVolumeButton() {
+        const icon = this.volumeBtn.querySelector('.icon');
+        if (this.isMuted || this.currentVolume === 0) {
             icon.className = 'icon icon-volume-muted';
         } else {
             icon.className = 'icon icon-volume';
         }
     }
 
-    function updateProgress() {
-        if (audio.duration) {
-            const progress = (audio.currentTime / audio.duration) * 100;
-            progressFill.style.width = `${progress}%`;
-            progressHandle.style.left = `${progress}%`;
-            currentTimeDisplay.textContent = formatTime(audio.currentTime);
-        }
+    /**
+     * Update volume display
+     */
+    updateVolume() {
+        const volumePercent = this.currentVolume * 100;
+        this.volumeFill.style.width = `${volumePercent}%`;
+        this.volumeHandle.style.left = `${volumePercent}%`;
+        this.audio.volume = this.currentVolume;
     }
+}
 
-    function updateVolume() {
-        const volumePercent = currentVolume * 100;
-        volumeFill.style.width = `${volumePercent}%`;
-        volumeHandle.style.left = `${volumePercent}%`;
-        audio.volume = currentVolume;
-    }
-
-    // Audio Event Listeners
-    audio.addEventListener('loadedmetadata', () => {
-        durationDisplay.textContent = formatTime(audio.duration);
-        currentTimeDisplay.textContent = formatTime(0);
-        updateVolume();
-    });
-
-    audio.addEventListener('timeupdate', updateProgress);
-
-    audio.addEventListener('ended', () => {
-        isPlaying = false;
-        updatePlayPauseButton();
-        progressFill.style.width = '0%';
-        progressHandle.style.left = '0%';
-        currentTimeDisplay.textContent = formatTime(0);
-        // Show sections again when music ends
-        showAllSections();
-    });
-
-    // Control Event Listeners
-    playPauseBtn.addEventListener('click', async () => {
-        try {
-            validateAudioElement(); // Add validation
-            
-            if (isPlaying) {
-                audio.pause();
-                isPlaying = false;
-                // Show sections when paused
-                showAllSections();
-            } else {
-                await audio.play();
-                isPlaying = true;
-                // Hide sections when playing
-                hideNonPlayerSections();
-            }
-            updatePlayPauseButton();
-        } catch(error) {
-            console.error('Audio playback failed:', error);
-            showError(error.message || '音声の再生に失敗しました。もう一度お試しください。');
-            isPlaying = false;
-            updatePlayPauseButton();
-        }
-    });
-
-    volumeBtn.addEventListener('click', () => {
-        isMuted = !isMuted;
-        audio.muted = isMuted;
-        updateVolumeButton();
-    });
-
-    // Progress Bar Click
-    progressBar.addEventListener('click', (e) => {
-        if (audio.duration) {
-            const rect = progressBar.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const progress = clickX / rect.width;
-            audio.currentTime = progress * audio.duration;
-        }
-    });
-
-    // Volume Slider Click
-    volumeSlider.addEventListener('click', (e) => {
-        const rect = volumeSlider.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        currentVolume = Math.max(0, Math.min(1, clickX / rect.width));
-        isMuted = false;
-        audio.muted = false;
-        updateVolume();
-        updateVolumeButton();
-    });
-
-    // Initialize audio player
-    audio.volume = currentVolume;
-    updatePlayPauseButton();
-    updateVolumeButton();
-
-    // Share current song button event listener
-    shareCurrentSongBtn.addEventListener('click', () => {
-        if (currentlyPlaying.album && currentlyPlaying.song) {
-            shareLink(currentlyPlaying.album, currentlyPlaying.song, shareCurrentSongBtn);
-        }
-    });
-
-    init();
+// Initialize the player when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const player = new MelodyPlayer();
+    player.init();
 });
