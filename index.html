@@ -3,36 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自作曲プレイヤー</title>
+    <title>MelodyHub - 自作曲プレイヤー</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="container">
-        <h1>自作曲プレイヤー</h1>
+        <header class="app-header">
+            <h1><span class="icon">🎵</span> MelodyHub</h1>
+            <p class="app-subtitle">あなたの音楽ライブラリ</p>
+        </header>
         
         <!-- アルバム選択 -->
-        <div id="album-selector">
-            <h2>アルバムを選択</h2>
-            <select id="album-select">
-                <option value="">-- アルバムを選択 --</option>
-            </select>
-        </div>
+        <section class="section" id="album-selector">
+            <div class="section-header">
+                <h2><span class="icon">📁</span> アルバムを選択</h2>
+            </div>
+            <div class="input-group">
+                <select id="album-select">
+                    <option value="">-- アルバムを選択してください --</option>
+                </select>
+                <span class="select-icon">▼</span>
+            </div>
+        </section>
 
         <!-- 曲一覧 -->
-        <div id="song-list" style="display: none;">
-            <h2>曲を選択</h2>
-            <ul id="song-items"></ul>
-        </div>
+        <section class="section" id="song-list" style="display: none;">
+            <div class="section-header">
+                <h2><span class="icon">🎶</span> トラック一覧</h2>
+            </div>
+            <div class="song-container">
+                <ul id="song-items"></ul>
+            </div>
+        </section>
 
         <!-- オーディオプレイヤー -->
-        <div id="audio-player" style="display: none;">
-            <h2>再生中</h2>
-            <audio id="audio" controls></audio>
-            <div id="now-playing"></div>
-        </div>
+        <section class="section player-section" id="audio-player" style="display: none;">
+            <div class="section-header">
+                <h2><span class="icon">▶️</span> 再生中</h2>
+            </div>
+            <div class="player-container">
+                <div id="now-playing" class="now-playing"></div>
+                <audio id="audio" controls></audio>
+            </div>
+        </section>
 
         <!-- エラーメッセージ -->
-        <div id="error-message" style="display: none;"></div>
+        <div id="error-message" class="error-message" style="display: none;">
+            <span class="icon">⚠️</span>
+            <span class="error-text"></span>
+        </div>
     </div>
 
     <script src="js/player.js"></script>
