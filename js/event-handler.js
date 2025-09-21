@@ -77,6 +77,9 @@ class EventHandler {
                 console.warn('Debug logging failed during song list listener setup', e);
             }
         }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', this.handleKeyDown.bind(this));
     }
 
     /**
@@ -309,6 +312,90 @@ class EventHandler {
             try { func(); } catch (err) { console.error('Debounced function threw:', err); if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('debounced func error', err); }
             delete this.debounceTimers[key];
         }, delay);
+    }
+
+    /**
+     * Handles keyboard shortcuts for better UX.
+     * @param {KeyboardEvent} event - The keyboard event
+     */
+    handleKeyDown(event) {
+        // Ignore if user is typing in an input
+        if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT' || event.target.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        switch (event.code) {
+            case 'Space':
+                event.preventDefault();
+                this.handlePlayPause();
+                break;
+            case 'ArrowUp':
+                event.preventDefault();
+                this.navigateSongList(-1);
+                break;
+            case 'ArrowDown':
+                event.preventDefault();
+                this.navigateSongList(1);
+                break;
+            case 'Enter':
+                event.preventDefault();
+                this.playSelectedSong();
+                break;
+            case 'KeyM':
+                if (event.ctrlKey || event.metaKey) {
+                    event.preventDefault();
+                    this.handleVolumeClick();
+                }
+                break;
+        }
+    }
+
+    /**
+     * Navigates the song list with arrow keys.
+     * @param {number} direction - Direction to navigate (-1 for up, 1 for down)
+     */
+    navigateSongList(direction) {
+        const songItems = this.dom.querySelectorAll('#song-items .song-item');
+        if (songItems.length === 0) return;
+
+        let currentIndex = -1;
+        songItems.forEach((item, index) => {
+            if (item.classList.contains('playing')) {
+                currentIndex = index;
+            }
+        });
+
+        if (currentIndex === -1) {
+            // No song playing, select first
+            currentIndex = 0;
+        } else {
+            currentIndex += direction;
+            if (currentIndex < 0) currentIndex = songItems.length - 1;
+            if (currentIndex >= songItems.length) currentIndex = 0;
+        }
+
+        // Update visual selection
+        songItems.forEach((item, index) => {
+            item.classList.toggle('selected', index === currentIndex);
+        });
+
+        // Scroll into view
+        songItems[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /**
+     * Plays the currently selected song.
+     */
+    playSelectedSong() {
+        const selectedSong = this.dom.querySelector('#song-items .song-item.selected');
+        if (selectedSong) {
+            const songTitle = selectedSong.title;
+            const albumSelect = this.dom.getElement('album-select');
+            const album = albumSelect ? albumSelect.value : '';
+            if (album && songTitle) {
+                this.controller.playSong(album, songTitle);
+            }
+        }
     }
 }
 

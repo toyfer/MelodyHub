@@ -116,7 +116,7 @@ class UIUpdater {
                 songItems.appendChild(li);
             });
         }
-        songList.classList.remove('hidden');
+        songList.classList.remove('d-none');
     }
 
     /**
@@ -242,7 +242,7 @@ class UIUpdater {
                 errorMessage.appendChild(iconSpan);
                 errorMessage.appendChild(textSpan);
             }
-            errorMessage.classList.remove('hidden');
+            errorMessage.classList.remove('d-none');
             if (window && window.debug) window.debug.error('UI error', { message });
         }
     }
@@ -277,13 +277,13 @@ class UIUpdater {
                 errorMessage.appendChild(textSpan);
             }
             // Change to success colors
-            errorMessage.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
-            errorMessage.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
-            errorMessage.classList.remove('hidden');
+            errorMessage.classList.remove('flash-error');
+            errorMessage.classList.add('flash-success');
+            errorMessage.classList.remove('d-none');
             this.successTimeoutId = setTimeout(() => {
-                errorMessage.classList.add('hidden');
-                errorMessage.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-                errorMessage.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                errorMessage.classList.add('d-none');
+                errorMessage.classList.remove('flash-success');
+                errorMessage.classList.add('flash-error');
                 this.successTimeoutId = null;
             }, 3000);
             if (window && window.debug) window.debug.log('UI success', { message });
@@ -296,8 +296,8 @@ class UIUpdater {
     hideNonPlayerSections() {
         const albumSelector = this.dom.getElement('album-select');
         const songList = this.dom.getElement('song-list');
-        if (albumSelector) albumSelector.classList.add('hidden');
-        if (songList) songList.classList.add('hidden');
+        if (albumSelector) albumSelector.classList.add('d-none');
+        if (songList) songList.classList.add('d-none');
     }
 
     /**
