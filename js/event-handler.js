@@ -159,8 +159,7 @@ class EventHandler {
 
             const song = li.title;
             const album = this.dom.getElement('album-select').value;
-                const album = this.dom.getElement('album-select').value;
-                try { if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Song clicked', { album, song }); } catch (e) {}
+            try { if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Song clicked', { album, song }); } catch (e) {}
             if (!album) {
                 this.ui.showError('アルバムが選択されていません');
                 return;
