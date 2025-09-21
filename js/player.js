@@ -113,11 +113,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Show loading state
+        songItems.innerHTML = '<li class="loading">楽曲を読み込み中...</li>';
+        songList.style.display = 'block';
+
         try {
             const songs = await fetchSongList(selectedAlbum);
             displaySongList(songs, selectedAlbum);
         } catch (error) {
             showError('曲リストの取得に失敗しました');
+            songList.style.display = 'none';
         }
     });
 
@@ -125,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function displaySongList(songs, album) {
         songItems.innerHTML = '';
         if (songs.length === 0) {
-            songItems.innerHTML = '<li class="empty-state">📭 このアルバムには曲がありません</li>';
+            songItems.innerHTML = '<li class="empty-state"><span class="icon icon-folder" style="margin-right: 0.5rem;"></span>このアルバムには曲がありません</li>';
         } else {
             songs.forEach(song => {
                 const li = document.createElement('li');
@@ -201,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (errorText) {
             errorText.textContent = message;
         } else {
-            errorMessage.innerHTML = `<span class="icon">⚠️</span><span class="error-text">${message}</span>`;
+            errorMessage.innerHTML = `<span class="icon icon-warning"></span><span class="error-text">${message}</span>`;
         }
         errorMessage.style.display = 'flex';
     }
