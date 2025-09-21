@@ -300,10 +300,16 @@ class UIUpdater {
      * Shows all sections (album selector and song list).
      */
     showAllSections() {
-        const albumSelector = this.dom.getElement('album-selector');
+        const albumSelector = this.dom.getElement('album-select');
         const songList = this.dom.getElement('song-list');
-        if (albumSelector) albumSelector.style.display = 'block';
-        if (songList) songList.style.display = 'block';
+        if (albumSelector) {
+            albumSelector.classList.remove('d-none');
+            albumSelector.style.display = 'block';
+        }
+        if (songList) {
+            songList.classList.remove('d-none');
+            songList.style.display = 'block';
+        }
     }
 
     /**
@@ -316,6 +322,28 @@ class UIUpdater {
         if (progressFill) progressFill.style.width = '0%';
         if (progressHandle) progressHandle.style.left = '0%';
         if (currentTimeDisplay) currentTimeDisplay.textContent = this.audio.formatTime(0);
+    }
+
+    /**
+     * Hides the audio player section.
+     */
+    hidePlayer() {
+        const audioPlayer = this.dom.getElement('audio-player');
+        if (audioPlayer) {
+            audioPlayer.classList.add('d-none');
+            audioPlayer.style.display = 'none';
+        }
+    }
+
+    /**
+     * Shows the audio player section.
+     */
+    showPlayer() {
+        const audioPlayer = this.dom.getElement('audio-player');
+        if (audioPlayer) {
+            audioPlayer.classList.remove('d-none');
+            audioPlayer.style.display = 'block';
+        }
     }
 }
 

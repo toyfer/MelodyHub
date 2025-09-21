@@ -47,7 +47,8 @@ class EventHandler {
             { id: 'volume-btn', event: 'click', handler: this.handleVolumeClick.bind(this) },
             { id: 'progress-bar', event: 'click', handler: this.handleProgressClick.bind(this) },
             { id: 'volume-slider', event: 'click', handler: this.handleVolumeSliderClick.bind(this) },
-            { id: 'share-current-song', event: 'click', handler: this.handleShareCurrentSong ? this.handleShareCurrentSong.bind(this) : (()=>{}) }
+            { id: 'share-current-song', event: 'click', handler: this.handleShareCurrentSong ? this.handleShareCurrentSong.bind(this) : (()=>{}) },
+            { id: 'back-to-album', event: 'click', handler: this.handleBack.bind(this) }
         ];
 
         this.eventListeners.forEach(({ id, event, handler }) => {
@@ -163,6 +164,7 @@ class EventHandler {
                 if (this.audio.isPlaying) {
                     this.audio.pause();
                     this.ui.showAllSections();
+                    this.ui.hidePlayer();
                 } else {
                     await this.audio.resume();
                     this.ui.hideNonPlayerSections();
@@ -260,6 +262,17 @@ class EventHandler {
             this.ui.showError('共有に失敗しました：' + (err && err.message ? err.message : String(err)));
             try { if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('handleShareCurrentSong failed', err); } catch (e) {}
         }
+    }
+
+    /**
+     * Handles back button click.
+     * Shows album and song list, hides player, and pauses audio.
+     */
+    handleBack() {
+        this.ui.showAllSections();
+        this.ui.hidePlayer();
+        this.audio.pause();
+        this.ui.updatePlayPauseButton();
     }
 
     /**

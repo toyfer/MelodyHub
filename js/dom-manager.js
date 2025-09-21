@@ -35,6 +35,7 @@ class DOMManager {
             'play-pause-btn',
             'volume-btn',
             'share-current-song',
+            'back-to-album',
             'current-time',
             'duration',
             'progress-bar',

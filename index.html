@@ -54,6 +54,9 @@
                 <!-- オーディオプレイヤー -->
                 <div class="Box mb-4 d-none" id="audio-player">
                     <div class="Box-header color-bg-info color-text-primary d-flex flex-justify-between flex-items-center">
+                        <button id="back-to-album" class="btn btn-sm">
+                            <i class="fas fa-arrow-left mr-1"></i>戻る
+                        </button>
                         <h3 class="Box-title d-flex flex-items-center">
                             <i class="fas fa-play mr-2"></i>再生中
                         </h3>
@@ -137,7 +140,7 @@
                     if (success) {
                         ui.updateNowPlaying(song);
                         ui.updatePlayingVisual(song);
-                        dom.setStyle(dom.getElement('audio-player'), { display: 'block' });
+                        ui.showPlayer();
                         ui.hideNonPlayerSections();
                         ui.showSuccess(`再生開始: ${song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')}`);
                     }
