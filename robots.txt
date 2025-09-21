@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /css/
+Disallow: /js/
+Disallow: /.git/
+Disallow: /test-url-params.html
+Disallow: /test_audio_fix.html
