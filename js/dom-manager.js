@@ -113,14 +113,40 @@ class DOMManager {
         const element = document.createElement(tagName);
         const dangerousAttributes = ['innerHTML', 'outerHTML', 'onclick', 'onload', 'onerror', 'onmouseover', 'onmouseout'];
         Object.keys(attributes).forEach(attr => {
-            if (dangerousAttributes.includes(attr.toLowerCase())) {
+            const lower = attr.toLowerCase();
+            if (dangerousAttributes.includes(lower)) {
                 console.warn(`Skipping dangerous attribute: ${attr}`);
                 return;
             }
             try {
+                // Common property mappings
+                if (lower === 'textcontent') {
+                    element.textContent = attributes[attr];
+                    return;
+                }
+                if (lower === 'classname' || lower === 'class') {
+                    element.className = attributes[attr];
+                    return;
+                }
+                if (lower === 'style') {
+                    const val = attributes[attr];
+                    if (typeof val === 'string') {
+                        element.setAttribute('style', val);
+                    } else if (typeof val === 'object' && val !== null) {
+                        Object.keys(val).forEach(k => { element.style[k] = val[k]; });
+                    }
+                    return;
+                }
+
+                // Fallback to properties when possible (for known DOM props)
+                if (attr in element) {
+                    try { element[attr] = attributes[attr]; return; } catch (e) {}
+                }
+
+                // Last resort: set as attribute
                 element.setAttribute(attr, attributes[attr]);
             } catch (error) {
-                console.error(`Error setting attribute ${attr}:`, error);
+                console.error(`Error applying attribute/property ${attr}:`, error);
                 if (window && window.debug) window.debug.error('createElement attribute error', { attr, error: String(error) });
             }
         });
