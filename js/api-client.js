@@ -37,14 +37,20 @@ class APIClient {
         }
 
         try {
+            console.log('Fetching albums from:', this.baseUrl);
             const response = await fetch(this.baseUrl);
             if (!response.ok) throw new Error('GitHub API not available');
             const data = await response.json();
-            return data
+            console.log('GitHub API response:', data);
+
+            const albums = data
                 .filter(item => item.type === 'dir')
                 .map(item => item.name)
                 .filter(name => name !== 'css' && name !== 'js');
+            console.log('Filtered albums:', albums);
+            return albums;
         } catch (err) {
+            console.error('Error fetching albums:', err);
             return ['monsterhunter'];
         }
     }
@@ -69,13 +75,19 @@ class APIClient {
         }
 
         try {
+            console.log(`Fetching songs for album: ${album}`);
             const response = await fetch(`${this.baseUrl}${album}`);
             if (!response.ok) throw new Error('Remote album not accessible');
             const data = await response.json();
-            return data
+            console.log(`GitHub API response for ${album}:`, data);
+
+            const songs = data
                 .filter(item => item.type === 'file' && this.isAudioFile(item.name))
                 .map(item => item.name);
+            console.log(`Filtered songs for ${album}:`, songs);
+            return songs;
         } catch (err) {
+            console.error(`Error fetching songs for ${album}:`, err);
             if (album === 'monsterhunter') {
                 return ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'];
             }
