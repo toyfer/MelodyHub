@@ -4,31 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>音楽プレイヤー</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <div class="container-fluid py-4">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 col-xl-6">
-                <header class="text-center mb-4">
-                    <h1 class="display-4 text-primary mb-0">
-                        <i class="fas fa-music me-2"></i>MelodyHub
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div class="container mx-auto py-4">
+        <div class="flex justify-center">
+            <div class="w-full max-w-4xl px-4">
+                <header class="text-center mb-6">
+                    <h1 class="text-4xl font-bold text-blue-600 mb-2 flex items-center justify-center">
+                        <i class="fas fa-music mr-2"></i>MelodyHub
                     </h1>
-                    <p class="text-muted">音楽プレイヤー</p>
+                    <p class="text-gray-600">音楽プレイヤー</p>
                 </header>
 
                 <!-- アルバム選択 -->
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-folder me-2"></i>アルバムを選択
+                <div class="bg-white rounded-lg shadow-md mb-6">
+                    <div class="bg-blue-600 text-white p-4 rounded-t-lg">
+                        <h5 class="text-lg font-semibold mb-0 flex items-center">
+                            <i class="fas fa-folder mr-2"></i>アルバムを選択
                         </h5>
                     </div>
-                    <div class="card-body">
+                    <div class="p-4">
                         <div class="mb-3">
-                            <select id="album-select" class="form-select form-select-lg">
+                            <select id="album-select" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg">
                                 <option value="">-- アルバムを選択してください --</option>
                             </select>
                         </div>
@@ -36,55 +36,55 @@
                 </div>
 
                 <!-- 曲一覧 -->
-                <div class="card mb-4 shadow-sm d-none" id="song-list">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-list me-2"></i>トラック一覧
+                <div class="bg-white rounded-lg shadow-md mb-6 hidden" id="song-list">
+                    <div class="bg-green-600 text-white p-4 rounded-t-lg">
+                        <h5 class="text-lg font-semibold mb-0 flex items-center">
+                            <i class="fas fa-list mr-2"></i>トラック一覧
                         </h5>
                     </div>
-                    <div class="card-body">
-                        <div class="song-container">
-                            <ul id="song-items" class="list-group list-group-flush"></ul>
+                    <div class="p-4">
+                        <div class="bg-gray-100 rounded-lg p-2 max-h-96 overflow-hidden">
+                            <ul id="song-items" class="list-none"></ul>
                         </div>
                     </div>
                 </div>
 
                 <!-- オーディオプレイヤー -->
-                <div class="card mb-4 shadow-sm d-none" id="audio-player">
-                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-play me-2"></i>再生中
+                <div class="bg-white rounded-lg shadow-md mb-6 hidden" id="audio-player">
+                    <div class="bg-blue-500 text-white p-4 rounded-t-lg flex justify-between items-center">
+                        <h5 class="text-lg font-semibold mb-0 flex items-center">
+                            <i class="fas fa-play mr-2"></i>再生中
                         </h5>
-                        <button id="share-current-song" class="btn btn-light btn-sm">
-                            <i class="fas fa-share me-1"></i>シェア
+                        <button id="share-current-song" class="bg-white text-gray-700 px-3 py-1 rounded-lg text-sm hover:bg-gray-100 transition duration-200 flex items-center">
+                            <i class="fas fa-share mr-1"></i>シェア
                         </button>
                     </div>
-                    <div class="card-body">
-                        <div id="now-playing" class="text-center mb-3 fw-bold fs-5"></div>
-                        <div class="custom-audio-player">
+                    <div class="p-4">
+                        <div id="now-playing" class="text-center mb-4 font-bold text-xl text-blue-600"></div>
+                        <div class="bg-white rounded-lg p-6 shadow-inner">
                             <audio id="audio" preload="metadata"></audio>
-                            <div class="player-controls d-flex align-items-center justify-content-center gap-3 flex-wrap">
-                                <button id="play-pause-btn" class="btn btn-primary btn-lg rounded-circle">
-                                    <i class="fas fa-play fa-lg"></i>
+                            <div class="flex items-center justify-center gap-4 flex-wrap">
+                                <button id="play-pause-btn" class="bg-blue-600 text-white w-16 h-16 rounded-full hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+                                    <i class="fas fa-play text-xl"></i>
                                 </button>
-                                <div class="progress-container flex-grow-1" style="min-width: 200px;">
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <span id="current-time" class="small text-muted">0:00</span>
-                                        <div class="progress flex-grow-1" style="height: 8px;">
-                                            <div class="progress-bar bg-primary" role="progressbar" id="progress-fill" style="width: 0%"></div>
+                                <div class="flex-1 min-w-48">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span id="current-time" class="text-sm text-gray-600 w-12 text-center">0:00</span>
+                                        <div class="flex-1 bg-gray-200 rounded-full h-2 cursor-pointer">
+                                            <div class="bg-blue-600 h-2 rounded-full" id="progress-fill" style="width: 0%"></div>
                                         </div>
-                                        <span id="duration" class="small text-muted">0:00</span>
+                                        <span id="duration" class="text-sm text-gray-600 w-12 text-center">0:00</span>
                                     </div>
-                                    <div class="progress" style="height: 8px; cursor: pointer;" id="progress-bar">
-                                        <div class="progress-bar bg-primary" role="progressbar" id="progress-fill" style="width: 0%"></div>
+                                    <div class="bg-gray-200 rounded-full h-2 cursor-pointer" id="progress-bar">
+                                        <div class="bg-blue-600 h-2 rounded-full" id="progress-fill" style="width: 0%"></div>
                                     </div>
                                 </div>
-                                <div class="volume-container d-flex align-items-center gap-2">
-                                    <button id="volume-btn" class="btn btn-secondary btn-sm">
+                                <div class="flex items-center gap-2">
+                                    <button id="volume-btn" class="bg-gray-600 text-white w-10 h-10 rounded-full hover:bg-gray-700 transition duration-200 flex items-center justify-center">
                                         <i class="fas fa-volume-up"></i>
                                     </button>
-                                    <div class="progress" style="width: 80px; height: 6px; cursor: pointer;" id="volume-slider">
-                                        <div class="progress-bar bg-secondary" role="progressbar" id="volume-fill" style="width: 70%"></div>
+                                    <div class="w-20 bg-gray-200 rounded-full h-1.5 cursor-pointer" id="volume-slider">
+                                        <div class="bg-gray-600 h-1.5 rounded-full" id="volume-fill" style="width: 70%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -93,8 +93,8 @@
                 </div>
 
                 <!-- エラーメッセージ -->
-                <div id="error-message" class="alert alert-danger d-none" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
+                <div id="error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg hidden" role="alert">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
                     <span class="error-text"></span>
                 </div>
             </div>

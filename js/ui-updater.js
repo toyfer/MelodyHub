@@ -90,14 +90,14 @@ class UIUpdater {
 
         songItems.innerHTML = '';
         if (songs.length === 0) {
-            const li = this.dom.createElement('li', { className: 'empty-state' });
+            const li = this.dom.createElement('li', { className: 'song-item empty-state' });
             const iconSpan = this.dom.createElement('span', { class: 'icon icon-folder', style: 'margin-right: 0.5rem;' });
             li.appendChild(iconSpan);
             li.appendChild(document.createTextNode('このアルバムには曲がありません'));
             songItems.appendChild(li);
         } else {
             songs.forEach(song => {
-                const li = this.dom.createElement('li');
+                const li = this.dom.createElement('li', { className: 'song-item' });
                 const songTitle = this.dom.createElement('span', {
                     textContent: song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')
                 });
@@ -116,8 +116,7 @@ class UIUpdater {
                 songItems.appendChild(li);
             });
         }
-        this.dom.setStyle(songList, { display: 'block' });
-        if (window && window.debug) window.debug.log('displaySongList', { album, count: songs.length });
+        songList.classList.remove('hidden');
     }
 
     /**
@@ -243,7 +242,7 @@ class UIUpdater {
                 errorMessage.appendChild(iconSpan);
                 errorMessage.appendChild(textSpan);
             }
-            this.dom.setStyle(errorMessage, { display: 'flex' });
+            errorMessage.classList.remove('hidden');
             if (window && window.debug) window.debug.error('UI error', { message });
         }
     }
@@ -277,11 +276,14 @@ class UIUpdater {
                 errorMessage.appendChild(iconSpan);
                 errorMessage.appendChild(textSpan);
             }
-            errorMessage.className = 'error-message success-message';
-            this.dom.setStyle(errorMessage, { display: 'flex' });
+            // Change to success colors
+            errorMessage.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
+            errorMessage.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+            errorMessage.classList.remove('hidden');
             this.successTimeoutId = setTimeout(() => {
-                this.dom.setStyle(errorMessage, { display: 'none' });
-                errorMessage.className = 'error-message';
+                errorMessage.classList.add('hidden');
+                errorMessage.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+                errorMessage.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
                 this.successTimeoutId = null;
             }, 3000);
             if (window && window.debug) window.debug.log('UI success', { message });
@@ -292,10 +294,10 @@ class UIUpdater {
      * Hides the album selector and song list sections.
      */
     hideNonPlayerSections() {
-        const albumSelector = this.dom.getElement('album-selector');
+        const albumSelector = this.dom.getElement('album-select');
         const songList = this.dom.getElement('song-list');
-        if (albumSelector) albumSelector.style.display = 'none';
-        if (songList) songList.style.display = 'none';
+        if (albumSelector) albumSelector.classList.add('hidden');
+        if (songList) songList.classList.add('hidden');
     }
 
     /**
