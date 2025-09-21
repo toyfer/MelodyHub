@@ -45,6 +45,20 @@ class MelodyPlayer {
         // Audio extensions
         this.audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac'];
 
+        // SVG Icons
+        this.svgIcons = {
+            'icon-play': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>`,
+            'icon-pause': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>`,
+            'icon-volume': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="currentColor"/></svg>`,
+            'icon-volume-muted': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.25.02-.01zm-6.5 0c0 .83.26 1.65.75 2.28l1.47-1.47c-.12-.37-.22-.77-.22-1.81 0-1.49 1.01-2.75 2.5-3.16v1.79c-.51.21-1 .67-1 1.37zm6.5-8.77c4.01.91 7 4.49 7 8.77 0 2.04-.61 3.93-1.66 5.51l1.46 1.46C21.87 17.28 23 14.76 23 12c0-4.28-2.99-7.86-7-8.77v2.06zm-7.2 14.02l1.47-1.47c-.49-.63-.75-1.45-.75-2.28 0-1.04.1-1.44.22-1.81l-1.47-1.47c-.49.63-.75 1.45-.75 2.28 0 1.04.1 1.44.22 1.81zM12 4L9.19 6.81 12 9.62V4zM4.27 3L3 4.27l9 9v.28c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4c.73 0 1.41-.21 2-.55v.28l9 9 1.27-1.27L4.27 3z" fill="currentColor"/></svg>`,
+            'icon-share': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" fill="currentColor"/></svg>`,
+            'icon-folder': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.89 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="currentColor"/></svg>`,
+            'icon-list': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="currentColor"/></svg>`,
+            'icon-chevron-down': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" fill="currentColor"/></svg>`,
+            'icon-warning': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="currentColor"/></svg>`,
+            'icon-check': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/></svg>`
+        };
+
         // Bind methods
         this.init = this.init.bind(this);
         this.handleAlbumChange = this.handleAlbumChange.bind(this);
@@ -63,6 +77,7 @@ class MelodyPlayer {
      * Initialize the player
      */
     async init() {
+        this.replaceIcons();
         this.setupEventListeners();
         this.audio.volume = this.currentVolume;
         this.updatePlayPauseButton();
@@ -70,6 +85,30 @@ class MelodyPlayer {
 
         const albums = await this.fetchAlbumList();
         this.handleUrlParameters(albums);
+    }
+
+    /**
+     * Replace icon spans with SVG elements
+     */
+    replaceIcons() {
+        const iconElements = document.querySelectorAll('.icon');
+        iconElements.forEach(element => {
+            // Find the icon class (e.g., icon-play, icon-pause, etc.)
+            const iconClass = Array.from(element.classList).find(cls => cls.startsWith('icon-'));
+            if (iconClass && this.svgIcons[iconClass]) {
+                // Create a temporary container to parse the SVG
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = this.svgIcons[iconClass];
+                const svgElement = tempDiv.firstElementChild;
+
+                // Copy classes and styles from the original element
+                svgElement.className = element.className;
+                svgElement.style.cssText = element.style.cssText;
+
+                // Replace the span with the SVG
+                element.parentNode.replaceChild(svgElement, element);
+            }
+        });
     }
 
     /**
