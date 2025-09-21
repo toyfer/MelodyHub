@@ -214,7 +214,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function playSong(album, song) {
         // Validate audio element exists
         if (!audio) {
-            showError('オーディオプレイヤーが初期化されていません');
+            showError('⚠️ オーディオプレイヤーが初期化されていません。ページを再読み込みしてください');
+            return;
+        }
+
+        // Validate inputs
+        if (!album || typeof album !== 'string' || album.trim() === '') {
+            showError('⚠️ アルバム名が指定されていません');
+            return;
+        }
+        
+        if (!song || typeof song !== 'string' || song.trim() === '') {
+            showError('⚠️ 曲名が指定されていません');
             return;
         }
 
@@ -248,19 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Validate inputs
-        if (!album || !song) {
-            showError('アルバム名と曲名が必要です');
-            return;
-        }
-        
         // Construct proper audio source URL with encoding for special characters
         const songPath = `${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
         console.log('Loading audio from:', songPath);
         
         // Set up error handlers before loading
         const handleLoadError = () => {
-            showError(`音楽ファイルが見つかりません: ${song}`);
+            const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
+            showError(`🔍 音楽ファイルが見つかりません: ${cleanSongName}`);
         };
         
         const handlePlayError = (error) => {
@@ -269,11 +275,15 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Provide specific error messages based on error type
             if (error.name === 'NotSupportedError') {
-                errorMessage = '音楽ファイルの形式がサポートされていません';
+                errorMessage = '🎵 音楽ファイルの形式がサポートされていません。MP3、WAV、OGG形式をお試しください';
             } else if (error.name === 'NotAllowedError') {
-                errorMessage = 'ブラウザによって再生がブロックされました。ユーザー操作後に再試行してください';
+                errorMessage = '🔇 ブラウザによって再生がブロックされました。ページをクリックしてから再試行してください';
             } else if (error.name === 'AbortError') {
-                errorMessage = '音楽の読み込みが中断されました';
+                errorMessage = '⏸️ 音楽の読み込みが中断されました。再度お試しください';
+            } else if (error.name === 'NetworkError') {
+                errorMessage = '🌐 ネットワークエラーが発生しました。接続を確認してください';
+            } else if (error.message && error.message.includes('404')) {
+                errorMessage = '🔍 音楽ファイルが見つかりません。ファイルが存在するか確認してください';
             } else if (error.message) {
                 errorMessage += `: ${error.message}`;
             }
@@ -281,9 +291,15 @@ document.addEventListener('DOMContentLoaded', () => {
             showError(errorMessage);
         };
         
-        // Reset audio state
-        audio.pause();
-        audio.currentTime = 0;
+        // Reset audio state properly before loading new track
+        try {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            updatePlayPauseButton();
+        } catch (resetError) {
+            console.warn('Error resetting audio state:', resetError);
+        }
         
         // Remove previous error handlers to avoid duplicate listeners
         audio.removeEventListener('error', handleLoadError);
@@ -306,6 +322,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Playback started successfully
                         console.log('Audio playback started successfully');
                         errorMessage.style.display = 'none';
+                        
+                        // Show brief success message
+                        const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
+                        showSuccess(`🎵 再生開始: ${cleanSongName}`);
                     })
                     .catch(handlePlayError);
             }
