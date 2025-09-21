@@ -8,6 +8,7 @@ class MelodyPlayer {
         // Essential DOM elements - keep strict IDs to reduce runtime lookup errors
         this.albumSelect = document.getElementById('album-select');
         this.songItems = document.getElementById('song-items');
+    this.songList = document.getElementById('song-list');
         this.audioPlayer = document.getElementById('audio-player');
         this.audio = document.getElementById('audio');
         this.nowPlaying = document.getElementById('now-playing');
@@ -147,6 +148,9 @@ class MelodyPlayer {
      * Populate album select dropdown
      */
     populateAlbumSelect(albums) {
+        if (!this.albumSelect) return;
+        // reset options to avoid duplicates on re-init
+        this.albumSelect.innerHTML = '';
         albums.forEach(album => {
             const option = document.createElement('option');
             option.value = album;
