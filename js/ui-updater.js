@@ -76,6 +76,11 @@ class UIUpdater {
         const select = this.dom.getElement('album-select');
         if (!select) return;
         select.innerHTML = '';
+        const defaultOption = this.dom.createElement('option', {
+            value: '',
+            textContent: '-- アルバムを選択してください --'
+        });
+        select.appendChild(defaultOption);
         albums.forEach(album => {
             const option = this.dom.createElement('option', {
                 value: album,
