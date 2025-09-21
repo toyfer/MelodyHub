@@ -31,9 +31,13 @@ class APIClient {
      * @returns {Promise<string[]>} Array of album names
      */
     async fetchAlbumList() {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
         try {
             console.log('Fetching albums from GitHub API:', this.baseUrl);
-            const response = await fetch(this.baseUrl);
+            const response = await fetch(this.baseUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
             if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
 
             const data = await response.json();
@@ -52,7 +56,12 @@ class APIClient {
 
             throw new Error('No albums found in repository');
         } catch (err) {
-            console.warn('GitHub API failed, using demo data:', err.message);
+            clearTimeout(timeoutId);
+            if (err.name === 'AbortError') {
+                console.warn('Fetch request timed out');
+            } else {
+                console.warn('GitHub API failed, using demo data:', err.message);
+            }
             // APIが失敗したらデモデータを使用
             return ['monsterhunter', 'classical', 'jazz', 'electronic'];
         }
@@ -66,9 +75,13 @@ class APIClient {
      * @returns {Promise<string[]>} Array of song filenames
      */
     async fetchSongList(album) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
         try {
             console.log(`Fetching songs for album: ${album} from GitHub API`);
-            const response = await fetch(`${this.baseUrl}${album}`);
+            const response = await fetch(`${this.baseUrl}${album}`, { signal: controller.signal });
+            clearTimeout(timeoutId);
             if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
 
             const data = await response.json();
@@ -86,7 +99,12 @@ class APIClient {
 
             throw new Error(`No songs found in album ${album}`);
         } catch (err) {
-            console.warn(`GitHub API failed for ${album}, using demo data:`, err.message);
+            clearTimeout(timeoutId);
+            if (err.name === 'AbortError') {
+                console.warn(`Fetch request for ${album} timed out`);
+            } else {
+                console.warn(`GitHub API failed for ${album}, using demo data:`, err.message);
+            }
 
             // APIが失敗したらデモデータを使用
             const demoSongs = {
@@ -97,9 +115,7 @@ class APIClient {
             };
             return demoSongs[album] || [];
         }
-    }
-
-    /**
+    }    /**
      * Checks if a filename represents an audio file based on its extension.
      * @param {string} filename - The filename to check
      * @returns {boolean} True if the file is an audio file, false otherwise

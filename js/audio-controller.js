@@ -13,8 +13,9 @@ class AudioController {
      * @param {HTMLAudioElement} audioElement - The audio element to control
      * @param {string} [repoOwner='toyfer'] - GitHub repository owner
      * @param {string} [repoName='MelodyHub'] - GitHub repository name
+     * @param {UIUpdater} [uiUpdater] - UI updater instance
      */
-    constructor(audioElement, repoOwner = 'toyfer', repoName = 'MelodyHub') {
+    constructor(audioElement, repoOwner = 'toyfer', repoName = 'MelodyHub', uiUpdater = null) {
         /** @type {HTMLAudioElement} The audio element being controlled */
         this.audio = audioElement;
         /** @type {boolean} Whether audio is currently playing */
@@ -31,6 +32,8 @@ class AudioController {
         this.repoOwner = repoOwner;
         /** @type {string} GitHub repository name */
         this.repoName = repoName;
+        /** @type {UIUpdater} UI updater instance */
+        this.ui = uiUpdater;
 
         this.bindEvents();
     }
@@ -186,18 +189,24 @@ class AudioController {
 
     /**
      * Handles loadedmetadata event.
+     * Updates the UI with duration information.
      * @private
      */
     onLoadedMetadata() {
-        // Handled by UI updater
+        if (this.ui) {
+            this.ui.setDuration();
+        }
     }
 
     /**
      * Handles timeupdate event.
+     * Updates the progress bar and time display.
      * @private
      */
     onTimeUpdate() {
-        // Handled by UI updater
+        if (this.ui) {
+            this.ui.updateProgress();
+        }
     }
 
     /**

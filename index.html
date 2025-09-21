@@ -98,8 +98,10 @@
         // モジュールの初期化
         const dom = new DOMManager();
         const api = new APIClient(repoOwner, repoName);
-        const audio = new AudioController(dom.getElement('audio'), repoOwner, repoName);
-        const ui = new UIUpdater(dom, audio);
+        const audioElement = dom.getElement('audio');
+        const ui = new UIUpdater(dom, null); // audio is null for now
+        const audio = new AudioController(audioElement, repoOwner, repoName, ui);
+        ui.audio = audio; // set audio after creation
 
         // グローバル関数として公開（event-handlerからアクセスするため）
         window.app = {

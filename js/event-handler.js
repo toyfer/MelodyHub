@@ -93,12 +93,20 @@ class EventHandler {
      * @param {Event} e - The click event
      */
     handleSongClick(e) {
-        const li = e.target.closest('li');
-        if (!li || li.classList.contains('empty-state')) return;
+        try {
+            const li = e.target.closest('li');
+            if (!li || li.classList.contains('empty-state')) return;
 
-        const song = li.title;
-        const album = this.dom.getElement('album-select').value;
-        this.controller.playSong(album, song);
+            const song = li.title;
+            const album = this.dom.getElement('album-select').value;
+            if (!album) {
+                this.ui.showError('アルバムが選択されていません');
+                return;
+            }
+            this.controller.playSong(album, song);
+        } catch (error) {
+            this.ui.showError('曲の選択に失敗しました: ' + error.message);
+        }
     }
 
     /**
@@ -128,8 +136,12 @@ class EventHandler {
      * Toggles mute state of the audio.
      */
     handleVolumeClick() {
-        this.audio.toggleMute();
-        this.ui.updateVolumeButton();
+        try {
+            this.audio.toggleMute();
+            this.ui.updateVolumeButton();
+        } catch (error) {
+            this.ui.showError('音量設定に失敗しました: ' + error.message);
+        }
     }
 
     /**
@@ -138,12 +150,20 @@ class EventHandler {
      * @param {MouseEvent} e - The click event
      */
     handleProgressClick(e) {
-        const progressBar = this.dom.getElement('progress-bar');
-        if (progressBar) {
+        try {
+            const progressBar = this.dom.getElement('progress-bar');
+            if (!progressBar) return;
+
             const rect = progressBar.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
-            const progress = clickX / rect.width;
-            this.audio.seek(progress);
+            const width = rect.width;
+            if (width <= 0) return;
+
+            const progress = clickX / width;
+            const clampedProgress = Math.max(0, Math.min(1, progress));
+            this.audio.seek(clampedProgress);
+        } catch (error) {
+            this.ui.showError('シークに失敗しました: ' + error.message);
         }
     }
 
@@ -153,14 +173,22 @@ class EventHandler {
      * @param {MouseEvent} e - The click event
      */
     handleVolumeSliderClick(e) {
-        const volumeSlider = this.dom.getElement('volume-slider');
-        if (volumeSlider) {
+        try {
+            const volumeSlider = this.dom.getElement('volume-slider');
+            if (!volumeSlider) return;
+
             const rect = volumeSlider.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
-            const volume = Math.max(0, Math.min(1, clickX / rect.width));
-            this.audio.setVolume(volume);
+            const width = rect.width;
+            if (width <= 0) return;
+
+            const volume = clickX / width;
+            const clampedVolume = Math.max(0, Math.min(1, volume));
+            this.audio.setVolume(clampedVolume);
             this.ui.updateVolumeButton();
             this.ui.updateVolume();
+        } catch (error) {
+            this.ui.showError('音量調整に失敗しました: ' + error.message);
         }
     }
 
