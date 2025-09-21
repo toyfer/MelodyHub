@@ -44,6 +44,7 @@ class APIClient {
 
                 const data = await response.json();
                 console.log('GitHub API response:', data);
+                if (window && window.debug) window.debug.info('API response received', { endpoint: this.baseUrl, attempt });
 
                 const albums = data
                     .filter(item => item.type === 'dir')
@@ -53,6 +54,7 @@ class APIClient {
                 // アルバムが見つかった場合はGitHubデータを返す
                 if (albums.length > 0) {
                     console.log('Using GitHub albums:', albums);
+                    if (window && window.debug) window.debug.log('Albums list populated', albums);
                     return albums;
                 }
 
@@ -61,8 +63,10 @@ class APIClient {
                 clearTimeout(timeoutId);
                 if (err.name === 'AbortError') {
                     console.warn(`Fetch request timed out on attempt ${attempt}`);
+                    if (window && window.debug) window.debug.warn('fetchAlbumList timeout', { attempt });
                 } else {
                     console.warn(`GitHub API failed on attempt ${attempt}:`, err.message);
+                    if (window && window.debug) window.debug.error('fetchAlbumList error', { attempt, message: err.message });
                 }
                 if (attempt === maxRetries) {
                     // APIが失敗したらデモデータを使用
@@ -99,6 +103,7 @@ class APIClient {
 
                 const data = await response.json();
                 console.log(`GitHub API response for ${album}:`, data);
+                if (window && window.debug) window.debug.info('API response received', { album, attempt });
 
                 const songs = data
                     .filter(item => item.type === 'file' && this.isAudioFile(item.name))
@@ -107,6 +112,7 @@ class APIClient {
                 // 曲が見つかった場合はGitHubデータを返す
                 if (songs.length > 0) {
                     console.log(`Using GitHub songs for ${album}:`, songs);
+                    if (window && window.debug) window.debug.log('Songs list populated', { album, songs });
                     return songs;
                 }
 
@@ -115,8 +121,10 @@ class APIClient {
                 clearTimeout(timeoutId);
                 if (err.name === 'AbortError') {
                     console.warn(`Fetch request for ${album} timed out on attempt ${attempt}`);
+                    if (window && window.debug) window.debug.warn('fetchSongList timeout', { album, attempt });
                 } else {
                     console.warn(`GitHub API failed for ${album} on attempt ${attempt}:`, err.message);
+                    if (window && window.debug) window.debug.error('fetchSongList error', { album, attempt, message: err.message });
                 }
                 if (attempt === maxRetries) {
                     // APIが失敗したらデモデータを使用

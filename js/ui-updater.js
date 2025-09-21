@@ -50,12 +50,15 @@ class UIUpdater {
                         }
                     } else {
                         console.error('Invalid SVG content for icon:', iconClass);
+                        if (window && window.debug) window.debug.error('Invalid SVG icon content', { iconClass });
                     }
                 } catch (error) {
                     console.error('Error parsing SVG for icon:', iconClass, error);
+                    if (window && window.debug) window.debug.error('Error parsing SVG', { iconClass, error: String(error) });
                 }
             }
         });
+        if (window && window.debug) window.debug.log('replaceIcons executed');
     }
 
     /**
@@ -73,6 +76,7 @@ class UIUpdater {
             });
             select.appendChild(option);
         });
+        if (window && window.debug) window.debug.log('populateAlbumSelect', albums);
     }
 
     /**
@@ -114,6 +118,7 @@ class UIUpdater {
             });
         }
         this.dom.setStyle(songList, { display: 'block' });
+        if (window && window.debug) window.debug.log('displaySongList', { album, count: songs.length });
     }
 
     /**
@@ -240,6 +245,7 @@ class UIUpdater {
                 errorMessage.appendChild(textSpan);
             }
             this.dom.setStyle(errorMessage, { display: 'flex' });
+            if (window && window.debug) window.debug.error('UI error', { message });
         }
     }
 
@@ -279,6 +285,7 @@ class UIUpdater {
                 errorMessage.className = 'error-message';
                 this.successTimeoutId = null;
             }, 3000);
+            if (window && window.debug) window.debug.log('UI success', { message });
         }
     }
 

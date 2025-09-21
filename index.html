@@ -84,11 +84,12 @@
     </div>
 
     <script type="module">
-        import DOMManager from './js/dom-manager.js';
-        import APIClient from './js/api-client.js';
-        import AudioController from './js/audio-controller.js';
-        import UIUpdater from './js/ui-updater.js';
-        import EventHandler from './js/event-handler.js';
+    import DOMManager from './js/dom-manager.js';
+    import APIClient from './js/api-client.js';
+    import AudioController from './js/audio-controller.js';
+    import UIUpdater from './js/ui-updater.js';
+    import EventHandler from './js/event-handler.js';
+    import DebugConsole from './js/debugger.js';
 
         // 設定
         const repoOwner = 'toyfer';
@@ -96,6 +97,9 @@
         const demoMode = true; // デモモードで安定動作
 
         // モジュールの初期化
+    const debug = new DebugConsole();
+    window.debug = debug; // global debug console for modules
+    window.debug.log('Debug console initialized');
         const dom = new DOMManager();
         const api = new APIClient(repoOwner, repoName);
         const audioElement = dom.getElement('audio');

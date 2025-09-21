@@ -87,6 +87,7 @@ class AudioController {
 
         this.isLoading = true;
         this.currentlyPlaying = { album, song };
+    if (window && window.debug) window.debug.info('playSong called', { album, song, demoMode });
 
         if (demoMode) {
             this.isLoading = false;
@@ -101,6 +102,7 @@ class AudioController {
             await this.audio.play();
             this.isPlaying = true;
             this.isLoading = false;
+            if (window && window.debug) window.debug.log('play started', { src: this.audio.src });
             return true;
         } catch (err) {
             try {
@@ -109,6 +111,7 @@ class AudioController {
                 await this.audio.play();
                 this.isPlaying = true;
                 this.isLoading = false;
+                if (window && window.debug) window.debug.log('remote play started', { src: this.audio.src });
                 return true;
             } catch (remoteErr) {
                 this.isLoading = false;
@@ -124,6 +127,7 @@ class AudioController {
         if (this.audio) {
             this.audio.pause();
             this.isPlaying = false;
+            if (window && window.debug) window.debug.info('paused');
         }
     }
 
@@ -136,6 +140,7 @@ class AudioController {
         if (this.audio && !this.isLoading) {
             await this.audio.play();
             this.isPlaying = true;
+            if (window && window.debug) window.debug.info('resumed');
         }
     }
 
@@ -164,6 +169,7 @@ class AudioController {
         if (this.audio) {
             this.audio.volume = this.currentVolume;
             this.audio.muted = false;
+            if (window && window.debug) window.debug.log('volume set', { volume: this.currentVolume });
         }
     }
 
@@ -174,6 +180,7 @@ class AudioController {
         this.isMuted = !this.isMuted;
         if (this.audio) {
             this.audio.muted = this.isMuted;
+            if (window && window.debug) window.debug.log('mute toggled', { isMuted: this.isMuted });
         }
     }
 
@@ -184,6 +191,7 @@ class AudioController {
     seek(progress) {
         if (this.audio && this.audio.duration) {
             this.audio.currentTime = progress * this.audio.duration;
+            if (window && window.debug) window.debug.log('seek', { progress });
         }
     }
 

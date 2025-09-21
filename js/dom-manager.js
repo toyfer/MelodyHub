@@ -49,6 +49,7 @@ class DOMManager {
             const element = document.getElementById(id);
             if (!element) {
                 console.warn(`DOM element with ID '${id}' not found`);
+                if (window && window.debug) window.debug.warn('DOM element not found', { id });
             }
             this.elements[id] = element;
         });
@@ -120,6 +121,7 @@ class DOMManager {
                 element.setAttribute(attr, attributes[attr]);
             } catch (error) {
                 console.error(`Error setting attribute ${attr}:`, error);
+                if (window && window.debug) window.debug.error('createElement attribute error', { attr, error: String(error) });
             }
         });
         return element;
