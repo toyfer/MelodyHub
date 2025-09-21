@@ -70,41 +70,40 @@ body::before {
 /* Header Styles */
 .app-header {
     text-align: center;
-    margin-bottom: 3rem;
-    padding: 2rem 0;
+    margin-bottom: 2rem;
+    padding: 1.5rem 0;
 }
 
 .app-header h1 {
-    font-size: 3rem;
+    font-size: 3.5rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 0.5rem;
+    margin: 0;
     letter-spacing: -0.02em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .app-header h1 .icon {
-    margin-right: 0.5rem;
+    margin-right: 0;
     background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    font-size: 2.5rem;
+    font-size: 3.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
     animation: musicPulse 2s ease-in-out infinite;
+}
 }
 
 @keyframes musicPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
-}
-
-.app-subtitle {
-    font-size: 1.125rem;
-    color: var(--text-secondary);
-    font-weight: 400;
-    margin: 0;
 }
 
 /* Icon Styles */
@@ -117,22 +116,24 @@ body::before {
     width: 1.25rem;
     height: 1.25rem;
     position: relative;
+    flex-shrink: 0;
+    vertical-align: middle;
 }
 
 /* Custom Icon Implementations */
 .icon-music::before {
     content: '';
     position: absolute;
-    width: 16px;
-    height: 16px;
+    width: 60%;
+    height: 60%;
     background: currentColor;
     border-radius: 50%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     box-shadow: 
-        8px -8px 0 -6px currentColor,
-        0 -8px 0 -4px currentColor;
+        30% -30% 0 -25% currentColor,
+        0 -30% 0 -15% currentColor;
 }
 
 .icon-folder::before {
@@ -217,7 +218,7 @@ body::before {
     background: var(--surface);
     border-radius: var(--radius-xl);
     padding: 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border);
     transition: all 0.3s ease;
@@ -231,8 +232,8 @@ body::before {
     top: 0;
     left: -100%;
     width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), var(--accent-color), transparent);
     transition: left 0.6s ease;
 }
 
@@ -242,8 +243,8 @@ body::before {
 
 .section:hover {
     box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
-    border-color: var(--primary-color);
+    transform: translateY(-3px);
+    border-color: var(--primary-light);
 }
 
 .section-header {
@@ -257,6 +258,7 @@ body::before {
     display: flex;
     align-items: center;
     margin: 0;
+}
 }
 
 .section-header h2 .icon {
@@ -698,7 +700,13 @@ audio::-webkit-media-controls-panel {
     }
     
     .app-header h1 {
-        font-size: 2.25rem;
+        font-size: 2.5rem;
+    }
+    
+    .app-header h1 .icon {
+        font-size: 2.5rem;
+        width: 2.5rem;
+        height: 2.5rem;
     }
     
     .section {
@@ -732,7 +740,13 @@ audio::-webkit-media-controls-panel {
 
 @media (max-width: 480px) {
     .app-header h1 {
-        font-size: 1.875rem;
+        font-size: 2rem;
+    }
+    
+    .app-header h1 .icon {
+        font-size: 2rem;
+        width: 2rem;
+        height: 2rem;
     }
     
     .section {
@@ -778,4 +792,5 @@ audio::-webkit-media-controls-panel {
     top: 35%;
     left: 65%;
     transform: translate(-50%, -50%) rotate(-45deg);
+}
 }
