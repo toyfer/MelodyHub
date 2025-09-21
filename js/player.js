@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const baseUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
     
     // Demo mode flag - set to true for offline demo
-    const DEMO_MODE = true;
+    const DEMO_MODE = false;
 
     // アルバムリストをGitHub APIから取得
     async function fetchAlbumList() {
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (DEMO_MODE) {
             // In demo mode, just show the player interface without actual audio
             const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-            nowPlaying.innerHTML = `<strong>${album.charAt(0).toUpperCase() + album.slice(1)}</strong> - ${cleanSongName}`;
+            nowPlaying.innerHTML = cleanSongName;
             
             audioPlayer.style.display = 'block';
             errorMessage.style.display = 'none';
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Clean up song name for display
         const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-        nowPlaying.innerHTML = `<strong>${album}</strong> - ${cleanSongName}`;
+        nowPlaying.innerHTML = cleanSongName;
         
         audioPlayer.style.display = 'block';
         errorMessage.style.display = 'none';
