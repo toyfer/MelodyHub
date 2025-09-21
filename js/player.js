@@ -36,6 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Store currently playing song info for sharing
     let currentlyPlaying = { album: null, song: null };
 
+    // Audio element validation function
+    function validateAudioElement() {
+        if (!audio) {
+            throw new Error('オーディオ要素が見つかりません');
+        }
+        return true;
+    }
+
     // アルバムリストをGitHub APIから取得
     async function fetchAlbumList() {
         if (DEMO_MODE) {
@@ -547,19 +555,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Control Event Listeners
-    playPauseBtn.addEventListener('click', () => {
-        if (isPlaying) {
-            audio.pause();
+    playPauseBtn.addEventListener('click', async () => {
+        try {
+            validateAudioElement(); // Add validation
+            
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                // Show sections when paused
+                showAllSections();
+            } else {
+                await audio.play();
+                isPlaying = true;
+                // Hide sections when playing
+                hideNonPlayerSections();
+            }
+            updatePlayPauseButton();
+        } catch(error) {
+            console.error('Audio playback failed:', error);
+            showError(error.message || '音声の再生に失敗しました。もう一度お試しください。');
             isPlaying = false;
-            // Show sections when paused
-            showAllSections();
-        } else {
-            audio.play();
-            isPlaying = true;
-            // Hide sections when playing
-            hideNonPlayerSections();
+            updatePlayPauseButton();
         }
-        updatePlayPauseButton();
     });
 
     volumeBtn.addEventListener('click', () => {
