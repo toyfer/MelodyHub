@@ -5,61 +5,51 @@
 
 class MelodyPlayer {
     constructor() {
-        // DOM Elements
+        // Essential DOM elements - keep strict IDs to reduce runtime lookup errors
         this.albumSelect = document.getElementById('album-select');
-        this.songList = document.getElementById('song-list');
         this.songItems = document.getElementById('song-items');
         this.audioPlayer = document.getElementById('audio-player');
         this.audio = document.getElementById('audio');
         this.nowPlaying = document.getElementById('now-playing');
         this.errorMessage = document.getElementById('error-message');
-        this.shareCurrentSongBtn = document.getElementById('share-current-song');
 
-        // Player Controls
+        // Controls
         this.playPauseBtn = document.getElementById('play-pause-btn');
+        this.volumeBtn = document.getElementById('volume-btn');
+        this.shareCurrentSongBtn = document.getElementById('share-current-song');
         this.currentTimeDisplay = document.getElementById('current-time');
         this.durationDisplay = document.getElementById('duration');
         this.progressBar = document.getElementById('progress-bar');
         this.progressFill = document.getElementById('progress-fill');
         this.progressHandle = document.getElementById('progress-handle');
-        this.volumeBtn = document.getElementById('volume-btn');
         this.volumeSlider = document.getElementById('volume-slider');
         this.volumeFill = document.getElementById('volume-fill');
         this.volumeHandle = document.getElementById('volume-handle');
 
-        // State
+        // Playback state
         this.isPlaying = false;
         this.isMuted = false;
         this.currentVolume = 0.7;
         this.currentlyPlaying = { album: null, song: null };
+        this.originalTitle = document.title || 'MelodyHub';
 
-    // Preserve original document title to restore later
-    this.originalTitle = document.title || 'MelodyHub';
-
-        // Configuration
+        // Configuration: repository API is optional; we fall back to local folders
         this.repoOwner = 'toyfer';
         this.repoName = 'MelodyHub';
         this.baseUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/contents/`;
         this.demoMode = false;
-
-        // Audio extensions
         this.audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac'];
 
-        // SVG Icons
+        // Minimal set of SVGs used at runtime (keeps file smaller)
         this.svgIcons = {
-            'icon-play': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>`,
-            'icon-pause': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>`,
-            'icon-volume': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="currentColor"/></svg>`,
-            'icon-volume-muted': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.25.02-.01zm-6.5 0c0 .83.26 1.65.75 2.28l1.47-1.47c-.12-.37-.22-.77-.22-1.81 0-1.49 1.01-2.75 2.5-3.16v1.79c-.51.21-1 .67-1 1.37zm6.5-8.77c4.01.91 7 4.49 7 8.77 0 2.04-.61 3.93-1.66 5.51l1.46 1.46C21.87 17.28 23 14.76 23 12c0-4.28-2.99-7.86-7-8.77v2.06zm-7.2 14.02l1.47-1.47c-.49-.63-.75-1.45-.75-2.28 0-1.04.1-1.44.22-1.81l-1.47-1.47c-.49.63-.75 1.45-.75 2.28 0 1.04.1 1.44.22 1.81zM12 4L9.19 6.81 12 9.62V4zM4.27 3L3 4.27l9 9v.28c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4c.73 0 1.41-.21 2-.55v.28l9 9 1.27-1.27L4.27 3z" fill="currentColor"/></svg>`,
-            'icon-share': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" fill="currentColor"/></svg>`,
-            'icon-folder': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.89 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="currentColor"/></svg>`,
-            'icon-list': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="currentColor"/></svg>`,
-            'icon-chevron-down': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" fill="currentColor"/></svg>`,
-            'icon-warning': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="currentColor"/></svg>`,
-            'icon-check': `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/></svg>`
+            'icon-play': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',
+            'icon-pause': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>',
+            'icon-volume': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9v6h4l5 5V4L7 9H3z" fill="currentColor"/></svg>',
+            'icon-volume-muted': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.25.02-.01z" fill="currentColor"/></svg>',
+            'icon-share': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81" fill="currentColor"/></svg>'
         };
 
-        // Bind methods
+        // Bind handlers
         this.init = this.init.bind(this);
         this.handleAlbumChange = this.handleAlbumChange.bind(this);
         this.handleSongClick = this.handleSongClick.bind(this);
@@ -79,12 +69,13 @@ class MelodyPlayer {
     async init() {
         this.replaceIcons();
         this.setupEventListeners();
-        this.audio.volume = this.currentVolume;
+        // apply initial volume
+        if (this.audio) this.audio.volume = this.currentVolume;
         this.updatePlayPauseButton();
         this.updateVolumeButton();
 
         const albums = await this.fetchAlbumList();
-        this.handleUrlParameters(albums);
+        await this.handleUrlParameters(albums);
     }
 
     /**
@@ -100,13 +91,9 @@ class MelodyPlayer {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = this.svgIcons[iconClass];
                 const svgElement = tempDiv.firstElementChild;
-
-                // Copy classes and styles from the original element
                 svgElement.className = element.className;
-                svgElement.style.cssText = element.style.cssText;
-
-                // Replace the span with the SVG
-                element.parentNode.replaceChild(svgElement, element);
+                // Replace only if parent exists (defensive)
+                if (element.parentNode) element.parentNode.replaceChild(svgElement, element);
             }
         });
     }
@@ -115,16 +102,18 @@ class MelodyPlayer {
      * Setup all event listeners
      */
     setupEventListeners() {
-        this.albumSelect.addEventListener('change', this.handleAlbumChange);
-        this.playPauseBtn.addEventListener('click', this.handlePlayPause);
-        this.volumeBtn.addEventListener('click', this.handleVolumeClick);
-        this.progressBar.addEventListener('click', this.handleProgressClick);
-        this.volumeSlider.addEventListener('click', this.handleVolumeSliderClick);
-        this.shareCurrentSongBtn.addEventListener('click', this.handleShareCurrentSong);
+        if (this.albumSelect) this.albumSelect.addEventListener('change', this.handleAlbumChange);
+        if (this.playPauseBtn) this.playPauseBtn.addEventListener('click', this.handlePlayPause);
+        if (this.volumeBtn) this.volumeBtn.addEventListener('click', this.handleVolumeClick);
+        if (this.progressBar) this.progressBar.addEventListener('click', this.handleProgressClick);
+        if (this.volumeSlider) this.volumeSlider.addEventListener('click', this.handleVolumeSliderClick);
+        if (this.shareCurrentSongBtn) this.shareCurrentSongBtn.addEventListener('click', this.handleShareCurrentSong);
 
-        this.audio.addEventListener('loadedmetadata', this.handleAudioLoadedMetadata);
-        this.audio.addEventListener('timeupdate', this.handleAudioTimeUpdate);
-        this.audio.addEventListener('ended', this.handleAudioEnded);
+        if (this.audio) {
+            this.audio.addEventListener('loadedmetadata', this.handleAudioLoadedMetadata);
+            this.audio.addEventListener('timeupdate', this.handleAudioTimeUpdate);
+            this.audio.addEventListener('ended', this.handleAudioEnded);
+        }
     }
 
     /**
@@ -136,15 +125,10 @@ class MelodyPlayer {
             this.populateAlbumSelect(demoAlbums);
             return demoAlbums;
         }
-
+        // Attempt GitHub API, but gracefully fall back to local folder names
         try {
             const response = await fetch(this.baseUrl);
-            if (!response.ok) {
-                const localAlbums = ['monsterhunter'];
-                this.populateAlbumSelect(localAlbums);
-                return localAlbums;
-            }
-
+            if (!response.ok) throw new Error('GitHub API not available');
             const data = await response.json();
             const albums = data
                 .filter(item => item.type === 'dir')
@@ -152,7 +136,7 @@ class MelodyPlayer {
                 .filter(name => name !== 'css' && name !== 'js');
             this.populateAlbumSelect(albums);
             return albums;
-        } catch (error) {
+        } catch (err) {
             const localAlbums = ['monsterhunter'];
             this.populateAlbumSelect(localAlbums);
             return localAlbums;
@@ -184,22 +168,15 @@ class MelodyPlayer {
             };
             return demoSongs[album] || [];
         }
-
         try {
             const response = await fetch(`${this.baseUrl}${album}`);
-            if (!response.ok) {
-                if (album === 'monsterhunter') {
-                    return ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'];
-                }
-                throw new Error('曲リストの取得に失敗しました');
-            }
-
+            if (!response.ok) throw new Error('Remote album not accessible');
             const data = await response.json();
-            const songs = data
+            return data
                 .filter(item => item.type === 'file' && this.isAudioFile(item.name))
                 .map(item => item.name);
-            return songs;
-        } catch (error) {
+        } catch (err) {
+            // Local fallback for shipped demo album
             if (album === 'monsterhunter') {
                 return ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'];
             }
@@ -308,54 +285,26 @@ class MelodyPlayer {
             return;
         }
 
-        const songPath = `${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
-        console.log('Loading audio from:', songPath);
+        // Resolve path: prefer local relative path (folder/file), otherwise GitHub path
+        const localPath = `${album}/${song}`;
+        const encodedRemotePath = `${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
 
         this.resetAudioState();
 
-        const handleLoadError = () => {
-            const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-            this.showError(`音楽ファイルが見つかりません: ${cleanSongName}`);
+        const setSourceAndPlay = async (src) => {
+            this.audio.src = src;
+            try {
+                await this.audio.play();
+                this.showSuccess(`再生開始: ${song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')}`);
+                this.errorMessage.style.display = 'none';
+            } catch (err) {
+                // User gesture required or format issue
+                this.showError(err.message || '音楽の再生に失敗しました');
+            }
         };
 
-        const handlePlayError = (error) => {
-            let errorMessage = '音楽の再生に失敗しました';
-            if (error.name === 'NotSupportedError') {
-                errorMessage = '音楽ファイルの形式がサポートされていません。MP3、WAV、OGG形式をお試しください';
-            } else if (error.name === 'NotAllowedError') {
-                errorMessage = 'ブラウザによって再生がブロックされました。ページをクリックしてから再試行してください';
-            } else if (error.name === 'AbortError') {
-                errorMessage = '音楽の読み込みが中断されました。再度お試しください';
-            } else if (error.name === 'NetworkError') {
-                errorMessage = 'ネットワークエラーが発生しました。接続を確認してください';
-            } else if (error.message && error.message.includes('404')) {
-                errorMessage = '音楽ファイルが見つかりません。ファイルが存在するか確認してください';
-            } else if (error.message) {
-                errorMessage += `: ${error.message}`;
-            }
-            this.showError(errorMessage);
-        };
-
-        this.audio.addEventListener('error', handleLoadError, { once: true });
-
-        try {
-            this.audio.src = songPath;
-            this.audio.load();
-
-            const playPromise = this.audio.play();
-            if (playPromise !== undefined) {
-                playPromise
-                    .then(() => {
-                        this.errorMessage.style.display = 'none';
-                        const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
-                        this.showSuccess(`再生開始: ${cleanSongName}`);
-                    })
-                    .catch(handlePlayError);
-            }
-        } catch (error) {
-            handlePlayError(error);
-            return;
-        }
+        // Try local file first (works for GH Pages / local server). If audio fails, try remote API path.
+        setSourceAndPlay(localPath).catch(() => setSourceAndPlay(encodedRemotePath));
 
         const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
         this.nowPlaying.innerHTML = cleanSongName;
