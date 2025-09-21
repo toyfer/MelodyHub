@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const demoSongs = {
                 'monsterhunter': [
                     'Another Treat.mp3',
+                    '【#モンハン】もうひとつのお楽しみ きゅっきゅっきゅっニャー【 #MHP2G #shorts #vtuber】 (Cover).mp3',
                     'Battle Theme - Rathalos.mp3',
                     'Village Theme - Peaceful Days.mp3'
                 ],
@@ -103,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 // Fallback to local songs if API fails
                 if (album === 'monsterhunter') {
-                    return ['Another Treat.mp3']; // Known local file
+                    return ['Another Treat.mp3', '【#モンハン】もうひとつのお楽しみ きゅっきゅっきゅっニャー【 #MHP2G #shorts #vtuber】 (Cover).mp3']; // Known local files
                 }
                 throw new Error('曲リストの取得に失敗しました');
             }
@@ -118,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             // Fallback to local songs if API fails
             if (album === 'monsterhunter') {
-                return ['Another Treat.mp3']; // Known local file
+                return ['Another Treat.mp3', '【#モンハン】もうひとつのお楽しみ きゅっきゅっきゅっニャー【 #MHP2G #shorts #vtuber】 (Cover).mp3']; // Known local files
             }
             showError('曲リストの取得に失敗しました');
             return [];
@@ -214,8 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Construct proper audio source URL
-        const songPath = `${album}/${song}`;
+        // Construct proper audio source URL with encoding for special characters
+        const songPath = `${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
         console.log('Loading audio from:', songPath);
         
         // Set up error handlers before loading
