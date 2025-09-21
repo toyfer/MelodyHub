@@ -302,6 +302,90 @@ body::before {
     align-items: center;
 }
 
+/* Share Button Styles */
+.share-button {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    margin-left: auto;
+}
+
+.share-button:hover {
+    background: linear-gradient(135deg, var(--accent-light), var(--accent-color));
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.share-button:active {
+    transform: translateY(0);
+}
+
+.share-button.copied {
+    background: linear-gradient(135deg, var(--success-color), #22c55e);
+}
+
+.song-share-button {
+    background: var(--surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: all 0.2s ease;
+    margin-left: auto;
+    min-width: 60px;
+}
+
+.song-share-button:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+li:hover .song-share-button {
+    opacity: 1;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    margin: 0;
+    flex: 1;
+}
+
+/* Enhanced song list items */
+li {
+    padding: 1rem 1rem 1rem 3rem;
+    margin: 0.25rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--surface);
+    border: 1px solid transparent;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    gap: 1rem;
+}
+
 .input-group::before {
     content: '';
     position: absolute;
@@ -582,6 +666,25 @@ audio::-webkit-media-controls-panel {
     font-size: 1.125rem;
 }
 
+.success-message {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7) !important;
+    color: var(--success-color) !important;
+    border-color: #bbf7d0 !important;
+}
+
+/* Check icon for success messages */
+.icon-check::before {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 12px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%) rotate(45deg);
+}
+
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -650,4 +753,29 @@ audio::-webkit-media-controls-panel {
         width: 10px;
         height: 10px;
     }
+}
+
+/* Share Icon */
+.icon-share::before {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 8px;
+    border: 2px solid currentColor;
+    border-radius: 2px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.icon-share::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    top: 35%;
+    left: 65%;
+    transform: translate(-50%, -50%) rotate(-45deg);
 }
