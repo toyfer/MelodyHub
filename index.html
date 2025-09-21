@@ -211,7 +211,9 @@
 
                     if (songs.includes(initialSong)) {
                         ui.displaySongList(songs, initialAlbum);
-                        window.app.playSong(initialAlbum, initialSong);
+                        // Highlight the song from URL parameters but don't auto-play
+                        ui.updatePlayingVisual(initialSong);
+                        ui.showSuccess(`曲が選択されました: ${initialSong.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')} - 再生するにはクリックしてください`);
                     } else {
                         ui.displaySongList(songs, initialAlbum);
                         ui.showError(`指定された曲がアルバムに存在しません: ${initialSong}`);

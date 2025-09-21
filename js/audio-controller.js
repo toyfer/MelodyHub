@@ -53,6 +53,7 @@ class AudioController {
             this.audio.addEventListener('loadedmetadata', this.onLoadedMetadata.bind(this));
             this.audio.addEventListener('timeupdate', this.onTimeUpdate.bind(this));
             this.audio.addEventListener('ended', this.onEnded.bind(this));
+            this.audio.addEventListener('error', this.onError.bind(this));
         }
     }
 
@@ -65,6 +66,7 @@ class AudioController {
             this.audio.removeEventListener('loadedmetadata', this.onLoadedMetadata);
             this.audio.removeEventListener('timeupdate', this.onTimeUpdate);
             this.audio.removeEventListener('ended', this.onEnded);
+            this.audio.removeEventListener('error', this.onError);
         }
     }
 
@@ -247,6 +249,23 @@ class AudioController {
         try {
             document.title = this.originalTitle;
         } catch (err) {
+        }
+    }
+
+    /**
+     * Handles audio element errors.
+     * Logs error details for debugging.
+     * @private
+     */
+    onError() {
+        if (this.audio && this.audio.error) {
+            const errorCode = this.audio.error.code;
+            const errorMessage = this.audio.error.message || 'Unknown audio error';
+            console.error('Audio error:', { code: errorCode, message: errorMessage });
+            
+            // Reset playing state on error
+            this.isPlaying = false;
+            this.isLoading = false;
         }
     }
 }
