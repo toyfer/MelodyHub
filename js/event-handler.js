@@ -47,7 +47,7 @@ class EventHandler {
             { id: 'volume-btn', event: 'click', handler: this.handleVolumeClick.bind(this) },
             { id: 'progress-bar', event: 'click', handler: this.handleProgressClick.bind(this) },
             { id: 'volume-slider', event: 'click', handler: this.handleVolumeSliderClick.bind(this) },
-            { id: 'share-current-song', event: 'click', handler: this.handleShareCurrentSong.bind(this) }
+            { id: 'share-current-song', event: 'click', handler: this.handleShareCurrentSong ? this.handleShareCurrentSong.bind(this) : (()=>{}) }
         ];
 
         this.eventListeners.forEach(({ id, event, handler }) => {
@@ -69,6 +69,13 @@ class EventHandler {
         if (songItems) {
             this.songListHandler = this.handleSongClick.bind(this);
             songItems.addEventListener('click', this.songListHandler);
+            try {
+                if (window && window.debug && typeof window.debug.info === 'function') {
+                    window.debug.info('Listener added: song-items click');
+                }
+            } catch (e) {
+                console.warn('Debug logging failed during song list listener setup', e);
+            }
         }
     }
 
@@ -267,6 +274,26 @@ class EventHandler {
     }
 
     /**
+     * Handles share button click for the currently playing song.
+     * Copies a shareable URL to clipboard and shows UI feedback.
+     */
+    async handleShareCurrentSong(e) {
+        try {
+            const album = this.dom.getElement('album-select') ? this.dom.getElement('album-select').value : null;
+            const song = this.audio && this.audio.currentlyPlaying ? this.audio.currentlyPlaying.song : null;
+            if (!album || !song) {
+                this.ui.showError('再生中の曲がありません');
+                return;
+            }
+            if (window && window.debug && typeof window.debug.log === 'function') window.debug.log('Sharing song', { album, song });
+            await this.controller.shareLink(album, song, e && e.currentTarget ? e.currentTarget : null);
+        } catch (err) {
+            this.ui.showError('共有に失敗しました：' + (err && err.message ? err.message : String(err)));
+            try { if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('handleShareCurrentSong failed', err); } catch (e) {}
+        }
+    }
+
+    /**
      * Debounces a function call.
      * @param {string} key - Unique key for the debounce timer
      * @param {Function} func - Function to debounce
@@ -276,16 +303,12 @@ class EventHandler {
         if (this.debounceTimers[key]) {
             clearTimeout(this.debounceTimers[key]);
         }
+        try { if (window && window.debug && typeof window.debug.info === 'function') window.debug.info(`Debounce scheduled: ${key} (${delay}ms)`); } catch (e) {}
         this.debounceTimers[key] = setTimeout(() => {
-            func();
+            try { if (window && window.debug && typeof window.debug.info === 'function') window.debug.info(`Debounce executed: ${key}`); } catch (e) {}
+            try { func(); } catch (err) { console.error('Debounced function threw:', err); if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('debounced func error', err); }
             delete this.debounceTimers[key];
         }, delay);
-            try { if (window && window.debug && typeof window.debug.info === 'function') window.debug.info(`Debounce scheduled: ${key} (${delay}ms)`); } catch (e) {}
-            this.debounceTimers[key] = setTimeout(() => {
-                try { if (window && window.debug && typeof window.debug.info === 'function') window.debug.info(`Debounce executed: ${key}`); } catch (e) {}
-                func();
-                delete this.debounceTimers[key];
-            }, delay);
     }
 }
 
