@@ -112,7 +112,7 @@ body::before {
     border-radius: var(--radius-xl);
     padding: 2rem;
     margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     border: 1px solid var(--border);
     transition: all 0.3s ease;
     position: relative;
@@ -135,7 +135,7 @@ body::before {
 }
 
 .section:hover {
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
     transform: translateY(-3px);
     border-color: var(--primary-light);
 }
@@ -231,7 +231,7 @@ body::before {
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 0.75rem;
-    opacity: 0;
+    opacity: 0.5;
     transition: all 0.2s ease;
     margin-left: auto;
     min-width: 60px;
@@ -273,6 +273,19 @@ li {
     position: relative;
     overflow: hidden;
     gap: 1rem;
+}
+
+li:hover {
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(99, 102, 241, 0.05) 100%);
+    border-color: var(--primary-light);
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
+}
+
+li.playing {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    color: white;
+    border-color: var(--primary-color);
 }
 
 .input-group::before {
@@ -529,7 +542,7 @@ li.empty-state::before {
 }
 
 .control-btn {
-    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
     border: none;
     border-radius: 50%;
@@ -545,8 +558,8 @@ li.empty-state::before {
 }
 
 .control-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    transform: translateY(-2px) scale(1.05);
     box-shadow: var(--shadow-lg);
 }
 
