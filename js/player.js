@@ -31,7 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             const response = await fetch(baseUrl);
-            if (!response.ok) throw new Error('アルバム一覧の取得に失敗しました');
+            if (!response.ok) {
+                // Fallback to local albums if API fails
+                const localAlbums = ['monsterhunter'];
+                localAlbums.forEach(album => {
+                    const option = document.createElement('option');
+                    option.value = album;
+                    option.textContent = album.charAt(0).toUpperCase() + album.slice(1);
+                    albumSelect.appendChild(option);
+                });
+                return localAlbums;
+            }
             
             const data = await response.json();
             // ディレクトリのみをフィルタリング
@@ -47,8 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
             
             return albums;
         } catch (error) {
-            showError('アルバム一覧の取得に失敗しました');
-            return [];
+            // Fallback to local albums if API fails
+            const localAlbums = ['monsterhunter'];
+            localAlbums.forEach(album => {
+                const option = document.createElement('option');
+                option.value = album;
+                option.textContent = album.charAt(0).toUpperCase() + album.slice(1);
+                albumSelect.appendChild(option);
+            });
+            return localAlbums;
         }
     }
 
@@ -58,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Demo data for different albums
             const demoSongs = {
                 'monsterhunter': [
-                    '【#モンハン】もうひとつのお楽しみ きゅっきゅっきゅっニャー【 #MHP2G #shorts #vtuber】 (Cover).mp3',
+                    'Another Treat.mp3',
                     'Battle Theme - Rathalos.mp3',
                     'Village Theme - Peaceful Days.mp3'
                 ],
@@ -83,7 +100,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             const response = await fetch(`${baseUrl}${album}`);
-            if (!response.ok) throw new Error('曲リストの取得に失敗しました');
+            if (!response.ok) {
+                // Fallback to local songs if API fails
+                if (album === 'monsterhunter') {
+                    return ['Another Treat.mp3']; // Known local file
+                }
+                throw new Error('曲リストの取得に失敗しました');
+            }
             
             const data = await response.json();
             // オーディオファイルのみをフィルタリング（.mp3, .wav, .oggなど）
@@ -93,6 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             return songs;
         } catch (error) {
+            // Fallback to local songs if API fails
+            if (album === 'monsterhunter') {
+                return ['Another Treat.mp3']; // Known local file
+            }
             showError('曲リストの取得に失敗しました');
             return [];
         }
@@ -147,8 +174,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 曲を再生
     function playSong(album, song) {
+        // Validate audio element exists
+        if (!audio) {
+            showError('オーディオプレイヤーが初期化されていません');
+            return;
+        }
+
         if (DEMO_MODE) {
-            // In demo mode, just show the player interface without actual audio
+            // In demo mode, show the player interface without actual audio
             const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
             nowPlaying.innerHTML = cleanSongName;
             
@@ -175,17 +208,79 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const songPath = `${album}/${song}`;
-        audio.src = songPath;
-        audio.load();
-        audio.play();
+        // Validate inputs
+        if (!album || !song) {
+            showError('アルバム名と曲名が必要です');
+            return;
+        }
         
-        // Clean up song name for display
+        // Construct proper audio source URL
+        const songPath = `${album}/${song}`;
+        console.log('Loading audio from:', songPath);
+        
+        // Set up error handlers before loading
+        const handleLoadError = () => {
+            showError(`音楽ファイルが見つかりません: ${song}`);
+        };
+        
+        const handlePlayError = (error) => {
+            console.error('Audio playback failed:', error);
+            let errorMessage = '音楽の再生に失敗しました';
+            
+            // Provide specific error messages based on error type
+            if (error.name === 'NotSupportedError') {
+                errorMessage = '音楽ファイルの形式がサポートされていません';
+            } else if (error.name === 'NotAllowedError') {
+                errorMessage = 'ブラウザによって再生がブロックされました。ユーザー操作後に再試行してください';
+            } else if (error.name === 'AbortError') {
+                errorMessage = '音楽の読み込みが中断されました';
+            } else if (error.message) {
+                errorMessage += `: ${error.message}`;
+            }
+            
+            showError(errorMessage);
+        };
+        
+        // Reset audio state
+        audio.pause();
+        audio.currentTime = 0;
+        
+        // Remove previous error handlers to avoid duplicate listeners
+        audio.removeEventListener('error', handleLoadError);
+        
+        // Add error handler for loading failures
+        audio.addEventListener('error', handleLoadError, { once: true });
+        
+        try {
+            // Set source and load audio
+            audio.src = songPath;
+            audio.load();
+            
+            // Attempt to play with proper error handling
+            const playPromise = audio.play();
+            
+            // Handle the Promise returned by play()
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => {
+                        // Playback started successfully
+                        console.log('Audio playback started successfully');
+                        errorMessage.style.display = 'none';
+                    })
+                    .catch(handlePlayError);
+            }
+            
+        } catch (error) {
+            // Handle synchronous errors
+            handlePlayError(error);
+            return;
+        }
+        
+        // Update UI elements
         const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
         nowPlaying.innerHTML = cleanSongName;
         
         audioPlayer.style.display = 'block';
-        errorMessage.style.display = 'none';
         
         // Add visual feedback for currently playing song
         document.querySelectorAll('#song-items li').forEach(li => {
