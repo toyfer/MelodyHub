@@ -93,7 +93,7 @@
         // 設定
         const repoOwner = 'toyfer';
         const repoName = 'MelodyHub';
-        const demoMode = false;
+        const demoMode = true; // デモモードで安定動作
 
         // モジュールの初期化
         const dom = new DOMManager();
@@ -111,7 +111,7 @@
                 }
 
                 try {
-                    const success = await audio.playSong(album, song, demoMode);
+                    const success = await audio.playSong(album, song, false);
                     if (success) {
                         ui.updateNowPlaying(song);
                         ui.updatePlayingVisual(song);
@@ -161,7 +161,7 @@
             ui.updatePlayPauseButton();
             ui.updateVolumeButton();
 
-            const albums = await api.fetchAlbumList(demoMode);
+            const albums = await api.fetchAlbumList();
             ui.populateAlbumSelect(albums);
             await handleUrlParameters(albums);
         }
@@ -182,7 +182,7 @@
                 if (albums.includes(initialAlbum)) {
                     const select = dom.getElement('album-select');
                     if (select) select.value = initialAlbum;
-                    const songs = await api.fetchSongList(initialAlbum, demoMode);
+                    const songs = await api.fetchSongList(initialAlbum);
 
                     if (songs.includes(initialSong)) {
                         ui.displaySongList(songs, initialAlbum);

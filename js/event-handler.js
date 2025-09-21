@@ -79,7 +79,7 @@ class EventHandler {
         this.dom.setStyle(this.dom.getElement('song-list'), { display: 'block' });
 
         try {
-            const songs = await this.api.fetchSongList(selectedAlbum, this.controller.demoMode);
+            const songs = await this.api.fetchSongList(selectedAlbum);
             this.ui.displaySongList(songs, selectedAlbum);
         } catch (error) {
             this.ui.showError('曲リストの取得に失敗しました');

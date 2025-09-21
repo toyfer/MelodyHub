@@ -26,20 +26,16 @@ class APIClient {
 
     /**
      * Fetches the list of available albums.
-     * Uses demo data in demo mode, otherwise fetches from GitHub API.
+     * Always tries GitHub API first, falls back to demo data if needed.
      * @async
-     * @param {boolean} [demoMode=false] - Whether to use demo data instead of API
      * @returns {Promise<string[]>} Array of album names
      */
-    async fetchAlbumList(demoMode = false) {
-        if (demoMode) {
-            return ['monsterhunter', 'classical', 'jazz', 'electronic'];
-        }
-
+    async fetchAlbumList() {
         try {
-            console.log('Fetching albums from:', this.baseUrl);
+            console.log('Fetching albums from GitHub API:', this.baseUrl);
             const response = await fetch(this.baseUrl);
-            if (!response.ok) throw new Error('GitHub API not available');
+            if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
+
             const data = await response.json();
             console.log('GitHub API response:', data);
 
@@ -47,24 +43,52 @@ class APIClient {
                 .filter(item => item.type === 'dir')
                 .map(item => item.name)
                 .filter(name => name !== 'css' && name !== 'js');
-            console.log('Filtered albums:', albums);
-            return albums;
+
+            // アルバムが見つかった場合はGitHubデータを返す
+            if (albums.length > 0) {
+                console.log('Using GitHub albums:', albums);
+                return albums;
+            }
+
+            throw new Error('No albums found in repository');
         } catch (err) {
-            console.error('Error fetching albums:', err);
-            return ['monsterhunter'];
+            console.warn('GitHub API failed, using demo data:', err.message);
+            // APIが失敗したらデモデータを使用
+            return ['monsterhunter', 'classical', 'jazz', 'electronic'];
         }
     }
 
     /**
      * Fetches the list of songs in a specific album.
-     * Uses demo data in demo mode, otherwise fetches from GitHub API.
+     * Always tries GitHub API first, falls back to demo data if needed.
      * @async
      * @param {string} album - The album name to fetch songs from
-     * @param {boolean} [demoMode=false] - Whether to use demo data instead of API
      * @returns {Promise<string[]>} Array of song filenames
      */
-    async fetchSongList(album, demoMode = false) {
-        if (demoMode) {
+    async fetchSongList(album) {
+        try {
+            console.log(`Fetching songs for album: ${album} from GitHub API`);
+            const response = await fetch(`${this.baseUrl}${album}`);
+            if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
+
+            const data = await response.json();
+            console.log(`GitHub API response for ${album}:`, data);
+
+            const songs = data
+                .filter(item => item.type === 'file' && this.isAudioFile(item.name))
+                .map(item => item.name);
+
+            // 曲が見つかった場合はGitHubデータを返す
+            if (songs.length > 0) {
+                console.log(`Using GitHub songs for ${album}:`, songs);
+                return songs;
+            }
+
+            throw new Error(`No songs found in album ${album}`);
+        } catch (err) {
+            console.warn(`GitHub API failed for ${album}, using demo data:`, err.message);
+
+            // APIが失敗したらデモデータを使用
             const demoSongs = {
                 'monsterhunter': ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'],
                 'classical': ['Beethoven - Symphony No. 9.mp3', 'Mozart - Piano Sonata K331.mp3', 'Bach - Brandenburg Concerto No. 3.mp3'],
@@ -72,26 +96,6 @@ class APIClient {
                 'electronic': ['Ambient Journey.mp3', 'Digital Dreams.mp3', 'Synthwave Nights.mp3']
             };
             return demoSongs[album] || [];
-        }
-
-        try {
-            console.log(`Fetching songs for album: ${album}`);
-            const response = await fetch(`${this.baseUrl}${album}`);
-            if (!response.ok) throw new Error('Remote album not accessible');
-            const data = await response.json();
-            console.log(`GitHub API response for ${album}:`, data);
-
-            const songs = data
-                .filter(item => item.type === 'file' && this.isAudioFile(item.name))
-                .map(item => item.name);
-            console.log(`Filtered songs for ${album}:`, songs);
-            return songs;
-        } catch (err) {
-            console.error(`Error fetching songs for ${album}:`, err);
-            if (album === 'monsterhunter') {
-                return ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'];
-            }
-            return [];
         }
     }
 
