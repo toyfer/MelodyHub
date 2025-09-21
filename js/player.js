@@ -33,6 +33,9 @@ class MelodyPlayer {
         this.currentVolume = 0.7;
         this.currentlyPlaying = { album: null, song: null };
 
+    // Preserve original document title to restore later
+    this.originalTitle = document.title || 'MelodyHub';
+
         // Configuration
         this.repoOwner = 'toyfer';
         this.repoName = 'MelodyHub';
@@ -314,6 +317,12 @@ class MelodyPlayer {
 
         const cleanSongName = song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
         this.nowPlaying.innerHTML = cleanSongName;
+        // Update document title to indicate currently playing track
+        try {
+            document.title = `${cleanSongName} — ${this.originalTitle}`;
+        } catch (err) {
+            // ignore if document isn't available in the environment
+        }
         this.audioPlayer.style.display = 'block';
         this.hideNonPlayerSections();
         this.updatePlayingVisual(song);
@@ -328,6 +337,8 @@ class MelodyPlayer {
             this.audio.currentTime = 0;
             this.isPlaying = false;
             this.updatePlayPauseButton();
+            // restore original title when playback is reset
+            try { document.title = this.originalTitle; } catch (e) {}
         } catch (resetError) {
             console.warn('Error resetting audio state:', resetError);
         }
@@ -497,10 +508,17 @@ class MelodyPlayer {
                 this.audio.pause();
                 this.isPlaying = false;
                 this.showAllSections();
+                // restore original title when paused
+                try { document.title = this.originalTitle; } catch (e) {}
             } else {
                 await this.audio.play();
                 this.isPlaying = true;
                 this.hideNonPlayerSections();
+                // set title when playback begins (if a track is selected)
+                if (this.currentlyPlaying && this.currentlyPlaying.song) {
+                    const cleanSongName = this.currentlyPlaying.song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '');
+                    try { document.title = `${cleanSongName} — ${this.originalTitle}`; } catch (e) {}
+                }
             }
             this.updatePlayPauseButton();
         } catch (error) {
@@ -585,6 +603,8 @@ class MelodyPlayer {
         this.progressHandle.style.left = '0%';
         this.currentTimeDisplay.textContent = this.formatTime(0);
         this.showAllSections();
+    // restore title when track ends
+    try { document.title = this.originalTitle; } catch (e) {}
     }
 
     /**

@@ -109,6 +109,173 @@ body::before {
     transform: translate(-50%, -50%);
 }
 
+/* ===== ICON GLYPHS ===== */
+/* Provide simple, dependency-free glyphs using pseudo elements */
+.icon {
+    display: inline-block;
+    width: 1.1rem;
+    height: 1.1rem;
+    vertical-align: middle;
+}
+
+/* Play (triangle) */
+.icon-play::before {
+    width: 0;
+    height: 0;
+    border-left: 0.62rem solid currentColor;
+    border-top: 0.42rem solid transparent;
+    border-bottom: 0.42rem solid transparent;
+    left: 50%;
+    transform: translate(-35%, -50%);
+}
+
+/* Pause (two vertical bars) */
+.icon-pause::before,
+.icon-pause::after {
+    width: 0.18rem;
+    height: 0.7rem;
+    background: currentColor;
+    border-radius: 0.02rem;
+}
+.icon-pause::before { left: 38%; transform: translate(-50%, -50%); }
+.icon-pause::after  { left: 62%; transform: translate(-50%, -50%); }
+
+/* Volume (speaker triangle) */
+.icon-volume::before {
+    width: 0;
+    height: 0;
+    border-left: 0.42rem solid currentColor;
+    border-top: 0.32rem solid transparent;
+    border-bottom: 0.32rem solid transparent;
+    left: 40%;
+    transform: translate(-50%, -50%);
+}
+.icon-volume::after {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0.06rem currentColor, 0.12rem 0 0 0.02rem currentColor;
+    opacity: 0.95;
+    left: 68%;
+    transform: translate(-50%, -50%);
+}
+
+/* Muted overlay */
+.icon-volume-muted::after {
+    content: '';
+    position: absolute;
+    width: 1.0rem;
+    height: 0.12rem;
+    background: currentColor;
+    left: 18%;
+    top: 68%;
+    transform: rotate(-30deg);
+}
+
+/* Share (circle + arrow) */
+.icon-share::before {
+    width: 0.66rem;
+    height: 0.66rem;
+    border-radius: 50%;
+    border: 0.08rem solid currentColor;
+    left: 50%;
+    transform: translate(-50%, -55%);
+}
+.icon-share::after {
+    width: 0;
+    height: 0;
+    border-left: 0.28rem solid currentColor;
+    border-top: 0.18rem solid transparent;
+    border-bottom: 0.18rem solid transparent;
+    left: 68%;
+    top: 26%;
+    transform: translate(-50%, -50%) rotate(20deg);
+}
+
+/* Folder (tab + body) */
+.icon-folder::before {
+    width: 0.7rem;
+    height: 0.46rem;
+    background: currentColor;
+    border-radius: 0.06rem;
+    left: 50%;
+    transform: translate(-50%, -60%);
+}
+.icon-folder::after {
+    width: 0.9rem;
+    height: 0.56rem;
+    background: currentColor;
+    border-radius: 0.06rem;
+    top: 62%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.95;
+}
+
+/* List (three lines) */
+.icon-list::before {
+    width: 0.78rem;
+    height: 0.12rem;
+    background: currentColor;
+    left: 50%;
+    transform: translate(-50%, -160%);
+}
+.icon-list::after {
+    width: 0.78rem;
+    height: 0.12rem;
+    background: currentColor;
+    box-shadow: 0 0.22rem 0 0 currentColor;
+    left: 50%;
+    transform: translate(-50%, -30%);
+}
+
+/* Chevron down */
+.icon-chevron-down::before {
+    width: 0.46rem;
+    height: 0.12rem;
+    border-bottom: 0.12rem solid currentColor;
+    transform: translate(-50%, -20%) rotate(45deg);
+    left: 50%;
+}
+.icon-chevron-down::after {
+    width: 0.46rem;
+    height: 0.12rem;
+    border-bottom: 0.12rem solid currentColor;
+    transform: translate(-50%, -20%) rotate(-45deg);
+    left: 50%;
+    top: 56%;
+}
+
+/* Warning (triangle + !) */
+.icon-warning::before {
+    width: 0;
+    height: 0;
+    border-left: 0.54rem solid currentColor;
+    border-top: 0.9rem solid transparent;
+    border-bottom: 0.9rem solid transparent;
+    transform: translate(-32%, -50%);
+}
+.icon-warning::after {
+    width: 0.08rem;
+    height: 0.5rem;
+    background: var(--surface);
+    left: 50%;
+    transform: translate(-50%, -10%);
+    border-radius: 0.02rem;
+}
+
+/* Check (✓) */
+.icon-check::before {
+    content: '';
+    width: 0.55rem;
+    height: 0.28rem;
+    border-left: 0.12rem solid currentColor;
+    border-bottom: 0.12rem solid currentColor;
+    transform: translate(-45%, -20%) rotate(-45deg);
+    left: 50%;
+}
+
+
 /* ===== COMPONENTS ===== */
 
 /* Section Styles */
