@@ -44,7 +44,14 @@ class UIUpdater {
                     const svgDoc = parser.parseFromString(this.svgIcons[iconClass], 'image/svg+xml');
                     const svgElement = svgDoc.documentElement;
                     if (svgElement.tagName.toLowerCase() === 'svg') {
-                        svgElement.className = element.className;
+                        // Copy class from original element to new SVG safely
+                        try {
+                            // Prefer the attribute string to avoid setter-only properties
+                            const originalClass = element.getAttribute && element.getAttribute('class') ? element.getAttribute('class') : (element.className || '');
+                            if (originalClass) svgElement.setAttribute('class', originalClass);
+                        } catch (classErr) {
+                            console.warn('Could not copy class to SVG element', classErr);
+                        }
                         if (element.parentNode) {
                             element.parentNode.replaceChild(svgElement, element);
                         }
