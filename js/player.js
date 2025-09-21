@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const baseUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
     
     // Demo mode flag - set to true for offline demo
-    const DEMO_MODE = false;
+    const DEMO_MODE = true;
 
     // アルバムリストをGitHub APIから取得
     async function fetchAlbumList() {
