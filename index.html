@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <header class="app-header">
-            <h1><span class="icon icon-music"></span></h1>
+            <h1><span class="icon icon-music"></span>MelodyHub</h1>
         </header>
         
         <!-- アルバム選択 -->
@@ -45,7 +45,35 @@
             </div>
             <div class="player-container">
                 <div id="now-playing" class="now-playing"></div>
-                <audio id="audio" controls></audio>
+                <div class="custom-audio-player">
+                    <audio id="audio" preload="metadata"></audio>
+                    <div class="player-controls">
+                        <button id="play-pause-btn" class="control-btn play-pause-btn">
+                            <span class="icon icon-play"></span>
+                        </button>
+                        <div class="progress-container">
+                            <div class="time-display" id="current-time">0:00</div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                    <div class="progress-handle" id="progress-handle"></div>
+                                </div>
+                            </div>
+                            <div class="time-display" id="duration">0:00</div>
+                        </div>
+                        <div class="volume-container">
+                            <button id="volume-btn" class="control-btn volume-btn">
+                                <span class="icon icon-volume"></span>
+                            </button>
+                            <div class="volume-slider" id="volume-slider">
+                                <div class="volume-bar" id="volume-bar">
+                                    <div class="volume-fill" id="volume-fill"></div>
+                                    <div class="volume-handle" id="volume-handle"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 

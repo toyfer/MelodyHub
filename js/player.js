@@ -8,6 +8,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorMessage = document.getElementById('error-message');
     const shareCurrentSongBtn = document.getElementById('share-current-song');
 
+    // Custom Audio Player Controls
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const currentTimeDisplay = document.getElementById('current-time');
+    const durationDisplay = document.getElementById('duration');
+    const progressBar = document.getElementById('progress-bar');
+    const progressFill = document.getElementById('progress-fill');
+    const progressHandle = document.getElementById('progress-handle');
+    const volumeBtn = document.getElementById('volume-btn');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeFill = document.getElementById('volume-fill');
+    const volumeHandle = document.getElementById('volume-handle');
+
+    // Audio Player State
+    let isPlaying = false;
+    let isMuted = false;
+    let currentVolume = 0.7;
+
     // GitHubリポジトリ情報（適宜変更）
     const repoOwner = 'toyfer'; // GitHubユーザー名
     const repoName = 'MelodyHub'; // リポジトリ名
@@ -433,6 +450,109 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // Custom Audio Player Functions
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    function updatePlayPauseButton() {
+        const icon = playPauseBtn.querySelector('.icon');
+        if (isPlaying) {
+            icon.className = 'icon icon-pause';
+        } else {
+            icon.className = 'icon icon-play';
+        }
+    }
+
+    function updateVolumeButton() {
+        const icon = volumeBtn.querySelector('.icon');
+        if (isMuted || currentVolume === 0) {
+            icon.className = 'icon icon-volume-muted';
+        } else {
+            icon.className = 'icon icon-volume';
+        }
+    }
+
+    function updateProgress() {
+        if (audio.duration) {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressHandle.style.left = `${progress}%`;
+            currentTimeDisplay.textContent = formatTime(audio.currentTime);
+        }
+    }
+
+    function updateVolume() {
+        const volumePercent = currentVolume * 100;
+        volumeFill.style.width = `${volumePercent}%`;
+        volumeHandle.style.left = `${volumePercent}%`;
+        audio.volume = currentVolume;
+    }
+
+    // Audio Event Listeners
+    audio.addEventListener('loadedmetadata', () => {
+        durationDisplay.textContent = formatTime(audio.duration);
+        currentTimeDisplay.textContent = formatTime(0);
+        updateVolume();
+    });
+
+    audio.addEventListener('timeupdate', updateProgress);
+
+    audio.addEventListener('ended', () => {
+        isPlaying = false;
+        updatePlayPauseButton();
+        progressFill.style.width = '0%';
+        progressHandle.style.left = '0%';
+        currentTimeDisplay.textContent = formatTime(0);
+    });
+
+    // Control Event Listeners
+    playPauseBtn.addEventListener('click', () => {
+        if (isPlaying) {
+            audio.pause();
+            isPlaying = false;
+        } else {
+            audio.play();
+            isPlaying = true;
+        }
+        updatePlayPauseButton();
+    });
+
+    volumeBtn.addEventListener('click', () => {
+        isMuted = !isMuted;
+        audio.muted = isMuted;
+        updateVolumeButton();
+    });
+
+    // Progress Bar Click
+    progressBar.addEventListener('click', (e) => {
+        if (audio.duration) {
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const progress = clickX / rect.width;
+            audio.currentTime = progress * audio.duration;
+        }
+    });
+
+    // Volume Slider Click
+    volumeSlider.addEventListener('click', (e) => {
+        const rect = volumeSlider.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        currentVolume = Math.max(0, Math.min(1, clickX / rect.width));
+        isMuted = false;
+        audio.muted = false;
+        updateVolume();
+        updateVolumeButton();
+    });
+
+    // Initialize audio player
+    audio.volume = currentVolume;
+    updatePlayPauseButton();
+    updateVolumeButton();
 
     // Share current song button event listener
     shareCurrentSongBtn.addEventListener('click', () => {
