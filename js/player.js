@@ -107,7 +107,10 @@ class MelodyPlayer {
             }
 
             const data = await response.json();
-            const albums = data.filter(item => item.type === 'dir').map(item => item.name);
+            const albums = data
+                .filter(item => item.type === 'dir')
+                .map(item => item.name)
+                .filter(name => name !== 'css' && name !== 'js');
             this.populateAlbumSelect(albums);
             return albums;
         } catch (error) {
