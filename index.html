@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>音楽プレイヤー</title>
-    <link href="https://unpkg.com/@primer/css@^21.0.0/dist/primer.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+    <link rel="preload" href="https://unpkg.com/@primer/css@^21.0.0/dist/primer.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://unpkg.com/@primer/css@^21.0.0/dist/primer.css" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><link rel="stylesheet" href="css/style.css"></noscript>
 </head>
 <body class="color-bg-canvas">
     <div class="container-lg py-6">
@@ -67,7 +69,6 @@
                     <div class="Box-body">
                         <div id="now-playing" class="text-center mb-3 h3 color-text-primary"></div>
                         <div class="custom-audio-player bg-gray-50 rounded-1 p-4">
-                            <audio id="audio" preload="metadata"></audio>
                             <div class="d-flex flex-items-center flex-justify-center gap-3 flex-wrap">
                                 <button id="play-pause-btn" class="btn btn-primary btn-lg rounded-circle d-flex flex-items-center flex-justify-center" style="width: 4rem; height: 4rem;">
                                     <i class="fas fa-play fa-lg"></i>
@@ -121,7 +122,7 @@
         // モジュールの初期化
     const dom = new DOMManager();
     const api = new APIClient(repoOwner, repoName);
-    const audioElement = dom.getElement('audio');
+    const audioElement = null; // Using Web Audio API instead
     const ui = new UIUpdater(dom, null); // audio is null for now
     const audio = new AudioController(audioElement, repoOwner, repoName, ui);
         ui.audio = audio; // set audio after creation

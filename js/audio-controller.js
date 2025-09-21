@@ -22,6 +22,16 @@ class AudioController {
 
         /** @type {HTMLAudioElement} The audio element being controlled */
         this.audio = audioElement;
+        /** @type {AudioContext} Web Audio API context */
+        this.audioContext = null;
+        /** @type {AudioBufferSourceNode} Current audio source */
+        this.source = null;
+        /** @type {GainNode} Volume control */
+        this.gainNode = null;
+        /** @type {number} Start time of current playback */
+        this.startTime = 0;
+        /** @type {number} Pause time offset */
+        this.pauseTime = 0;
         /** @type {boolean} Whether audio is currently playing */
         this.isPlaying = false;
         /** @type {boolean} Whether audio is muted */
@@ -49,12 +59,8 @@ class AudioController {
      * @private
      */
     bindEvents() {
-        if (this.audio) {
-            this.audio.addEventListener('loadedmetadata', this.onLoadedMetadata.bind(this));
-            this.audio.addEventListener('timeupdate', this.onTimeUpdate.bind(this));
-            this.audio.addEventListener('ended', this.onEnded.bind(this));
-            this.audio.addEventListener('error', this.onError.bind(this));
-        }
+        // Web Audio API doesn't use audio element events directly
+        // Time updates will be handled via requestAnimationFrame
     }
 
     /**
@@ -62,12 +68,7 @@ class AudioController {
      * Should be called when the controller is destroyed.
      */
     removeEventListeners() {
-        if (this.audio) {
-            this.audio.removeEventListener('loadedmetadata', this.onLoadedMetadata);
-            this.audio.removeEventListener('timeupdate', this.onTimeUpdate);
-            this.audio.removeEventListener('ended', this.onEnded);
-            this.audio.removeEventListener('error', this.onError);
-        }
+        // Web Audio API doesn't require explicit event listener removal
     }
 
     /**
@@ -81,14 +82,13 @@ class AudioController {
      * @throws {Error} If both local and remote paths fail to load
      */
     async playSong(album, song, demoMode = false) {
-        if (!this.audio) return false;
         if (this.isLoading) {
             return false;
         }
 
         this.isLoading = true;
         this.currentlyPlaying = { album, song };
-    if (window && window.debug) window.debug.info('playSong called', { album, song, demoMode });
+        if (window && window.debug) window.debug.info('playSong called', { album, song, demoMode });
 
         if (demoMode) {
             this.isLoading = false;
@@ -97,19 +97,31 @@ class AudioController {
 
         this.reset();
 
+        // Initialize AudioContext on first user interaction
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.gainNode = this.audioContext.createGain();
+            this.gainNode.connect(this.audioContext.destination);
+            this.gainNode.gain.value = this.currentVolume;
+        }
+
         try {
             const localPath = `${album}/${song}`;
-            this.audio.src = localPath;
-            await this.audio.play();
-            this.isPlaying = true;
+            const response = await fetch(localPath);
+            if (!response.ok) throw new Error('Local fetch failed');
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+            this.playBuffer(audioBuffer);
             this.isLoading = false;
             return true;
         } catch (err) {
             try {
                 const encodedRemotePath = `https://raw.githubusercontent.com/${this.repoOwner}/${this.repoName}/main/${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
-                this.audio.src = encodedRemotePath;
-                await this.audio.play();
-                this.isPlaying = true;
+                const response = await fetch(encodedRemotePath);
+                if (!response.ok) throw new Error('Remote fetch failed');
+                const arrayBuffer = await response.arrayBuffer();
+                const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                this.playBuffer(audioBuffer);
                 this.isLoading = false;
                 return true;
             } catch (remoteErr) {
@@ -120,11 +132,38 @@ class AudioController {
     }
 
     /**
+     * Plays an AudioBuffer using Web Audio API.
+     * @param {AudioBuffer} buffer - The audio buffer to play
+     */
+    playBuffer(buffer) {
+        this.source = this.audioContext.createBufferSource();
+        this.source.buffer = buffer;
+        this.source.connect(this.gainNode);
+        this.startTime = this.audioContext.currentTime - this.pauseTime;
+        this.source.start(0, this.pauseTime);
+        this.isPlaying = true;
+        this.source.onended = () => this.onEnded();
+        this.onLoadedMetadata();
+        this.updateTime();
+    }
+
+    /**
+     * Updates the time display and progress bar.
+     */
+    updateTime() {
+        if (this.isPlaying) {
+            this.onTimeUpdate();
+            requestAnimationFrame(() => this.updateTime());
+        }
+    }
+
+    /**
      * Pauses audio playback.
      */
     pause() {
-        if (this.audio) {
-            this.audio.pause();
+        if (this.source && this.isPlaying) {
+            this.source.stop();
+            this.pauseTime = this.audioContext.currentTime - this.startTime;
             this.isPlaying = false;
         }
     }
@@ -135,9 +174,8 @@ class AudioController {
      * @returns {Promise<void>}
      */
     async resume() {
-        if (this.audio && !this.isLoading) {
-            await this.audio.play();
-            this.isPlaying = true;
+        if (!this.isLoading && this.source && !this.isPlaying) {
+            this.playBuffer(this.source.buffer);
         }
     }
 
@@ -146,11 +184,12 @@ class AudioController {
      * Pauses playback, resets time to 0, and restores original title.
      */
     reset() {
-        if (this.audio) {
-            this.audio.pause();
-            this.audio.currentTime = 0;
-            this.isPlaying = false;
+        if (this.source && this.isPlaying) {
+            this.source.stop();
         }
+        this.pauseTime = 0;
+        this.startTime = 0;
+        this.isPlaying = false;
         try {
             document.title = this.originalTitle;
         } catch (e) {}
@@ -163,9 +202,8 @@ class AudioController {
     setVolume(volume) {
         this.currentVolume = Math.max(0, Math.min(1, volume));
         this.isMuted = false;
-        if (this.audio) {
-            this.audio.volume = this.currentVolume;
-            this.audio.muted = false;
+        if (this.gainNode) {
+            this.gainNode.gain.value = this.currentVolume;
         }
     }
 
@@ -174,8 +212,8 @@ class AudioController {
      */
     toggleMute() {
         this.isMuted = !this.isMuted;
-        if (this.audio) {
-            this.audio.muted = this.isMuted;
+        if (this.gainNode) {
+            this.gainNode.gain.value = this.isMuted ? 0 : this.currentVolume;
         }
     }
 
@@ -184,8 +222,15 @@ class AudioController {
      * @param {number} progress - Progress value between 0 and 1
      */
     seek(progress) {
-        if (this.audio && this.audio.duration) {
-            this.audio.currentTime = progress * this.audio.duration;
+        if (this.source && this.source.buffer) {
+            const seekTime = progress * this.source.buffer.duration;
+            if (this.isPlaying) {
+                this.source.stop();
+                this.pauseTime = seekTime;
+                this.playBuffer(this.source.buffer);
+            } else {
+                this.pauseTime = seekTime;
+            }
         }
     }
 
@@ -194,7 +239,12 @@ class AudioController {
      * @returns {number} Current time in seconds
      */
     getCurrentTime() {
-        return this.audio ? this.audio.currentTime : 0;
+        if (!this.audioContext || !this.source) return 0;
+        if (this.isPlaying) {
+            return this.audioContext.currentTime - this.startTime;
+        } else {
+            return this.pauseTime;
+        }
     }
 
     /**
@@ -202,7 +252,7 @@ class AudioController {
      * @returns {number} Duration in seconds
      */
     getDuration() {
-        return this.audio ? this.audio.duration : 0;
+        return this.source && this.source.buffer ? this.source.buffer.duration : 0;
     }
 
     /**
