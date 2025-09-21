@@ -99,7 +99,6 @@ body::before {
     height: 3.5rem;
     animation: musicPulse 2s ease-in-out infinite;
 }
-}
 
 @keyframes musicPulse {
     0%, 100% { transform: scale(1); }
@@ -792,5 +791,4 @@ audio::-webkit-media-controls-panel {
     top: 35%;
     left: 65%;
     transform: translate(-50%, -50%) rotate(-45deg);
-}
 }
