@@ -1,10 +1,21 @@
-# Serena Usage Instructions for MelodyHub Project
+# Serena Tools: Enhancing Agent-Driven Development in MelodyHub Project
 
-`serena` is a powerful command-line tool integrated into this project to enhance development workflows, particularly for code analysis, refactoring, and understanding the project structure. It leverages Language Server Protocol (LSP) capabilities to provide deep insights into the codebase.
+This document outlines the use of `serena` tools, which are the primary means by which the agent interacts with and understands the MelodyHub codebase. These tools leverage Language Server Protocol (LSP) capabilities to provide deep, symbolic insights, enabling the agent to perform code analysis, refactoring, and structural understanding with high precision and safety.
 
-## How to Use Serena
+## Agent's Primary Interaction Method
 
-`serena` commands are executed using `uvx`, which handles the tool's environment and dependencies. Always prefix your `serena` commands with `uvx --from git+https://github.com/oraios/serena serena`.
+Instead of relying on generic file system operations or string-based replacements, the agent prioritizes the use of `serena`'s symbolic tools. This approach allows for:
+
+*   **Symbolic Understanding:** The agent comprehends code at a higher level, recognizing classes, functions, variables, and their relationships.
+*   **Increased Safety:** Changes are applied with an understanding of the code's structure, reducing the risk of introducing errors.
+*   **Efficiency and Precision:** Tasks like finding references, refactoring symbols, or inserting code are executed with greater accuracy and less ambiguity.
+*   **Consistency:** Adherence to project conventions is maintained through symbolic manipulation.
+
+While direct shell commands for file manipulation (e.g., `read_file`, `write_file`) are available, the agent will default to `serena` tools whenever a task involves code understanding or modification at a symbolic level.
+
+## How to Use Serena (for manual interaction or understanding agent's actions)
+
+For users who wish to interact with `serena` directly or to understand the underlying commands the agent might be conceptually executing, `serena` commands can be run using `uvx`, which handles the tool's environment and dependencies. Always prefix your `serena` commands with `uvx --from git+https://github.com/oraios/serena serena`.
 
 **General Syntax:**
 `uvx --from git+https://github.com/oraios/serena serena <command> [subcommand] [options]`
