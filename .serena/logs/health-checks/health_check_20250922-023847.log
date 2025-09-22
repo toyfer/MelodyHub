@@ -1,0 +1,59 @@
+INFO  2025-09-22 02:38:47,552 serena.cli:health_check:557 - Starting health check for project: /home/user/MelodyHub
+INFO  2025-09-22 02:38:47,552 serena.cli:health_check:561 - Creating SerenaAgent with disabled dashboard...
+INFO  2025-09-22 02:38:47,668 serena.agent:__init__:204 - Starting Serena server (version=0.1.4-56688e3a-dirty, process id=42522, parent process id=42495)
+INFO  2025-09-22 02:38:47,668 serena.agent:__init__:205 - Configuration file: None
+INFO  2025-09-22 02:38:47,669 serena.agent:__init__:206 - Available projects: 
+INFO  2025-09-22 02:38:47,669 serena.agent:__init__:207 - Loaded tools (36): read_file, create_text_file, list_dir, find_file, replace_regex, delete_lines, replace_lines, insert_at_line, search_for_pattern, restart_language_server, get_symbols_overview, find_symbol, find_referencing_symbols, replace_symbol_body, insert_after_symbol, insert_before_symbol, write_memory, read_memory, list_memories, delete_memory, execute_shell_command, activate_project, remove_project, switch_modes, get_current_config, check_onboarding_performed, onboarding, think_about_collected_information, think_about_task_adherence, think_about_whether_you_are_done, summarize_changes, prepare_for_new_conversation, initial_instructions, jet_brains_find_symbol, jet_brains_find_referencing_symbols, jet_brains_get_symbols_overview
+INFO  2025-09-22 02:38:47,669 serena.config.serena_config:apply:106 - SerenaAgentContext[name='desktop-app'] included 1 tools: switch_modes
+INFO  2025-09-22 02:38:47,672 serena.agent:__init__:221 - Number of exposed tools: 26
+INFO  2025-09-22 02:38:47,723 serena.agent:_update_active_tools:401 - Active tools (26): activate_project, check_onboarding_performed, create_text_file, delete_memory, execute_shell_command, find_file, find_referencing_symbols, find_symbol, get_current_config, get_symbols_overview, insert_after_symbol, insert_before_symbol, list_dir, list_memories, onboarding, prepare_for_new_conversation, read_file, read_memory, replace_regex, replace_symbol_body, search_for_pattern, switch_modes, think_about_collected_information, think_about_task_adherence, think_about_whether_you_are_done, write_memory
+INFO  2025-09-22 02:38:47,730 serena.util.file_system:start:329 - Loading of .gitignore files starting ...
+INFO  2025-09-22 02:38:47,731 serena.util.file_system:_load_gitignore_files:143 - Processing .gitignore file: /home/user/MelodyHub/.gitignore
+INFO  2025-09-22 02:38:47,732 serena.util.file_system:_load_gitignore_files:143 - Processing .gitignore file: /home/user/MelodyHub/.serena/.gitignore
+INFO  2025-09-22 02:38:47,733 serena.util.file_system:stop:336 - Loading of .gitignore files completed in 0.003 seconds
+INFO  2025-09-22 02:38:47,734 serena.agent:load_project_from_path_or_name:476 - Added new project MelodyHub for path /home/user/MelodyHub
+INFO  2025-09-22 02:38:47,734 serena.agent:_activate_project:441 - Activating MelodyHub at /home/user/MelodyHub
+INFO  2025-09-22 02:38:47,735 serena.agent:_update_active_tools:401 - Active tools (26): activate_project, check_onboarding_performed, create_text_file, delete_memory, execute_shell_command, find_file, find_referencing_symbols, find_symbol, get_current_config, get_symbols_overview, insert_after_symbol, insert_before_symbol, list_dir, list_memories, onboarding, prepare_for_new_conversation, read_file, read_memory, replace_regex, replace_symbol_body, search_for_pattern, switch_modes, think_about_collected_information, think_about_task_adherence, think_about_whether_you_are_done, write_memory
+INFO  2025-09-22 02:38:47,735 serena.agent:issue_task:420 - Scheduling Task-1[init_language_server]
+INFO  2025-09-22 02:38:47,736 serena.agent:start:329 - Task-1[init_language_server] starting ...
+INFO  2025-09-22 02:38:47,736 serena.agent:start:329 - Language server initialization starting ...
+INFO  2025-09-22 02:38:47,736 serena.project:create_language_server:303 - Creating language server instance for /home/user/MelodyHub.
+INFO  2025-09-22 02:38:47,738 serena.cli:health_check:564 - SerenaAgent created successfully
+INFO  2025-09-22 02:38:47,738 serena.cli:health_check:567 - Searching for analyzable files...
+INFO  2025-09-22 02:38:47,749 serena.cli:health_check:576 - Found analyzable file: js/audio-controller.js
+INFO  2025-09-22 02:38:47,752 serena.cli:health_check:594 - Testing GetSymbolsOverviewTool on file: js/audio-controller.js
+INFO  2025-09-22 02:38:47,752 serena.agent:issue_task:420 - Scheduling Task-2[<lambda>]
+INFO  2025-09-22 02:38:47,884 solidlsp:load_cache:1553 - Loading document symbols cache from /home/user/MelodyHub/.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+INFO  2025-09-22 02:38:47,890 solidlsp:load_cache:1557 - Loaded 14 document symbols from cache.
+INFO  2025-09-22 02:38:47,892 serena.agent:reset_language_server:594 - Starting the language server for MelodyHub
+INFO  2025-09-22 02:38:47,893 solidlsp:start:1599 - Starting language server with language typescript for /home/user/MelodyHub
+INFO  2025-09-22 02:38:47,894 solidlsp:_start_server:224 - Starting TypeScript server process
+INFO  2025-09-22 02:38:47,894 solidlsp.ls_handler:start:189 - Starting language server process via command: ['/home/user/.serena/language_servers/static/TypeScriptLanguageServer/ts-lsp/node_modules/.bin/typescript-language-server', '--stdio']
+INFO  2025-09-22 02:38:47,899 solidlsp:_start_server:228 - Sending initialize request from LSP client to LSP server and awaiting response
+INFO  2025-09-22 02:38:48,201 solidlsp:window_log_message:207 - LSP: window/logMessage: {"type": 3, "message": "Using Typescript version (bundled) 5.5.4 from path "/home/user/.serena/language_servers/static/TypeScriptLanguageServer/ts-lsp/node_modules/typescript/lib/tsserver.js""}
+INFO  2025-09-22 02:38:49,204 solidlsp:_start_server:246 - Timeout waiting for TypeScript server to become ready, proceeding anyway
+INFO  2025-09-22 02:38:49,207 serena.agent:stop:336 - Language server initialization completed in 1.471 seconds
+INFO  2025-09-22 02:38:49,207 serena.agent:stop:336 - Task-1[init_language_server] completed in 1.472 seconds
+INFO  2025-09-22 02:38:49,207 serena.agent:start:329 - Task-2[<lambda>] starting ...
+INFO  2025-09-22 02:38:49,216 serena.agent:stop:336 - Task-2[<lambda>] completed in 0.008 seconds
+INFO  2025-09-22 02:38:49,222 serena.cli:health_check:597 - GetSymbolsOverviewTool returned 2 symbols
+INFO  2025-09-22 02:38:49,222 serena.cli:health_check:622 - Using symbol for testing: AudioController (kind: 5)
+INFO  2025-09-22 02:38:49,222 serena.cli:health_check:625 - Testing FindSymbolTool for symbol: AudioController
+INFO  2025-09-22 02:38:49,223 serena.agent:issue_task:420 - Scheduling Task-3[<lambda>]
+INFO  2025-09-22 02:38:49,223 serena.agent:start:329 - Task-3[<lambda>] starting ...
+INFO  2025-09-22 02:38:49,231 serena.agent:stop:336 - Task-3[<lambda>] completed in 0.008 seconds
+INFO  2025-09-22 02:38:49,237 serena.cli:health_check:630 - FindSymbolTool found 1 matches for symbol AudioController
+INFO  2025-09-22 02:38:49,237 serena.cli:health_check:633 - Testing FindReferencingSymbolsTool for symbol: AudioController
+INFO  2025-09-22 02:38:49,237 serena.agent:issue_task:420 - Scheduling Task-4[<lambda>]
+INFO  2025-09-22 02:38:49,239 serena.agent:start:329 - Task-4[<lambda>] starting ...
+WARNING 2025-09-22 02:38:53,470 solidlsp:request_referencing_symbols:1271 - Could not find containing symbol for js/audio-controller.js:322:15. Returning file symbol instead
+INFO  2025-09-22 02:38:53,474 serena.agent:stop:336 - Task-4[<lambda>] completed in 4.235 seconds
+INFO  2025-09-22 02:38:53,476 serena.cli:health_check:637 - FindReferencingSymbolsTool found 1 references for symbol AudioController
+INFO  2025-09-22 02:38:53,476 serena.cli:health_check:643 - Testing SearchForPatternTool for pattern: AudioController
+INFO  2025-09-22 02:38:53,476 serena.agent:issue_task:420 - Scheduling Task-5[<lambda>]
+INFO  2025-09-22 02:38:53,476 serena.agent:start:329 - Task-5[<lambda>] starting ...
+INFO  2025-09-22 02:38:53,491 serena.text_utils:search_files:326 - Processing 6 files.
+INFO  2025-09-22 02:38:53,560 serena.text_utils:search_files:367 - Found 9 total matches across 6 files
+INFO  2025-09-22 02:38:53,561 serena.agent:stop:336 - Task-5[<lambda>] completed in 0.084 seconds
+INFO  2025-09-22 02:38:53,563 serena.cli:health_check:650 - SearchForPatternTool found 9 pattern matches for AudioController
+INFO  2025-09-22 02:38:53,563 serena.cli:health_check:664 - Health check completed successfully

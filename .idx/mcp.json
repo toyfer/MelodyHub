@@ -1,15 +1,21 @@
 {
-    "mcpServers": {
-      "serena": {
-        "command": "uvx",
-        "args": [
-          "--from",
-          "git+https://github.com/oraios/serena",
-          "serena",
-          "start-mcp-server",
-          "--context",
-          "agent"
-        ]
-      }
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "agent"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
     }
   }
+}

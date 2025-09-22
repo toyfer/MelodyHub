@@ -22,7 +22,7 @@ class AppController {
 
     async init() {
         try {
-            const albums = await this.api.fetchAlbumList();
+            const albums = ['monsterhunter']; // Hardcoded album for testing
             this.ui.populateAlbumSelect(albums);
         } catch (error) {
             this.ui.showError('アルバムリストの取得に失敗しました: ' + error.message);
