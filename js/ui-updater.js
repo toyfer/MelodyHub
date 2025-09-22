@@ -59,20 +59,35 @@ class UIUpdater {
      * @param {string[]} albums - Array of album names to display
      */
     populateAlbumSelect(albums) {
-        const select = this.dom.getElement('album-select');
-        if (!select) return;
-        select.innerHTML = '';
-        const defaultOption = this.dom.createElement('option', {
-            value: '',
-            textContent: '-- アルバムを選択してください --'
-        });
-        select.appendChild(defaultOption);
+        const albumOptions = this.dom.getElement('album-options');
+        if (!albumOptions) return;
+        albumOptions.innerHTML = '';
+
         albums.forEach(album => {
-            const option = this.dom.createElement('option', {
-                value: album,
-                textContent: album.charAt(0).toUpperCase() + album.slice(1)
+            const option = this.dom.createElement('div', {
+                className: 'custom-option',
+                textContent: album.charAt(0).toUpperCase() + album.slice(1),
+                'data-value': album
             });
-            select.appendChild(option);
+            albumOptions.appendChild(option);
+        });
+    }
+
+    /**
+     * Filters the album options based on the search input.
+     * @param {string} searchTerm - The term to filter by
+     */
+    filterAlbumOptions(searchTerm) {
+        const options = this.dom.querySelectorAll('#album-options .custom-option');
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+        options.forEach(option => {
+            const albumName = option.textContent.toLowerCase();
+            if (albumName.includes(lowerCaseSearchTerm)) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
         });
     }
 

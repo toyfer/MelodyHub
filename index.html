@@ -30,10 +30,19 @@
                     </div>
                     <div class="Box-body">
                         <div class="form-group">
-                            <div class="form-select-wrap">
-                                <select id="album-select" class="form-select form-select-lg">
-                                    <option value="">-- アルバムを選択してください --</option>
-                                </select>
+                            <div id="album-select" class="custom-select-wrapper">
+                                <div id="album-select-container" class="custom-select">
+                                    <div id="album-select-trigger" class="custom-select-trigger">
+                                        <span>-- アルバムを選択してください --</span>
+                                        <div class="arrow"></div>
+                                    </div>
+                                    <div class="custom-options">
+                                        <div class="custom-search-wrapper">
+                                            <input type="text" id="album-search" placeholder="アルバムを検索..." class="form-control">
+                                        </div>
+                                        <div id="album-options" class="custom-options-list"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -203,8 +212,18 @@
                 }
 
                 if (albums.includes(initialAlbum)) {
-                    const select = dom.getElement('album-select');
-                    if (select) select.value = initialAlbum;
+                    const trigger = dom.getElement('album-select-trigger');
+                    if (trigger) {
+                        trigger.querySelector('span').textContent = initialAlbum;
+                    }
+
+                    const options = dom.querySelectorAll('#album-options .custom-option');
+                    options.forEach(option => {
+                        if (option.dataset.value === initialAlbum) {
+                            option.classList.add('selected');
+                        }
+                    });
+
                     const songs = await api.fetchSongList(initialAlbum);
 
                     if (songs.includes(initialSong)) {

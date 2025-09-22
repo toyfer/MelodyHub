@@ -192,13 +192,97 @@ body {
     border-radius: 6px;
 }
 
-/* Volume slider specific styles */
-#volume-slider {
-    background-color: #e1e4e8 !important;
-    cursor: pointer;
+
+/* Custom Select Dropdown */
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
 }
 
-#volume-fill {
-    background-color: #656d76 !important;
+.custom-select {
+    position: relative;
+}
+
+.custom-select-trigger {
+    background-color: #f6f8fa;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.custom-select-trigger:hover {
+    background-color: #f0f2f4;
+}
+
+.custom-select.open .custom-select-trigger {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: #0969da;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+}
+
+.arrow {
+    border: solid #24292f;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+}
+
+.custom-select.open .arrow {
+    transform: rotate(-135deg);
+}
+
+.custom-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border: 1px solid #0969da;
+    border-top: 0;
+    border-radius: 0 0 6px 6px;
+    z-index: 10;
+    display: none;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.custom-select.open .custom-options {
+    display: block;
+}
+
+.custom-search-wrapper {
+    padding: 0.5rem;
+    border-bottom: 1px solid #d0d7de;
+}
+
+#album-search {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+}
+
+.custom-options-list .custom-option {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.custom-options-list .custom-option:hover {
+    background-color: #f0f2f4;
+}
+
+.custom-options-list .custom-option.selected {
+    background-color: #0969da;
+    color: #ffffff;
 }
 
