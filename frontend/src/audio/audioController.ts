@@ -332,7 +332,7 @@ class AudioController {
   public currentlyPlaying: CurrentlyPlaying;
   private originalTitle: string;
   private apiClient: APIClient;
-  private ui: any; // UIUpdater will be migrated later
+  private ui: UIUpdater | null; // UIUpdater will be migrated later
   public isLoading: boolean;
 
   constructor(audioElement: HTMLAudioElement | null, apiClient: APIClient, uiUpdater: any = null) {
