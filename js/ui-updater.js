@@ -59,49 +59,19 @@ class UIUpdater {
      * @param {string[]} albums - Array of album names to display
      */
     populateAlbumSelect(albums) {
-        const albumOptions = this.dom.getElement('album-options');
-        if (!albumOptions) return;
-        albumOptions.innerHTML = '';
+        const albumSelect = this.dom.getElement('album-select');
+        if (!albumSelect) return;
+
+        // Clear existing options, keeping the default placeholder
+        albumSelect.innerHTML = '<option value="">-- アルバムを選択してください --</option>';
 
         albums.forEach(album => {
-            const option = this.dom.createElement('div', {
-                className: 'custom-option',
-                textContent: album.charAt(0).toUpperCase() + album.slice(1),
-                'data-value': album
+            const option = this.dom.createElement('option', {
+                value: album,
+                textContent: album.charAt(0).toUpperCase() + album.slice(1)
             });
-            albumOptions.appendChild(option);
+            albumSelect.appendChild(option);
         });
-    }
-
-    /**
-     * Filters the album options based on the search input.
-     * @param {string} searchTerm - The term to filter by
-     */
-    filterAlbumOptions(searchTerm) {
-        const options = this.dom.querySelectorAll('#album-options .custom-option');
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        let hasResults = false;
-
-        options.forEach(option => {
-            const albumName = option.textContent.toLowerCase();
-            if (albumName.includes(lowerCaseSearchTerm)) {
-                option.style.display = 'block';
-                hasResults = true;
-            } else {
-                option.style.display = 'none';
-            }
-        });
-
-        const noResultsMessage = this.dom.querySelector('#album-options .no-results');
-        if (!hasResults && !noResultsMessage) {
-            const noResults = this.dom.createElement('div', {
-                className: 'custom-option no-results',
-                textContent: '結果がありません'
-            });
-            this.dom.getElement('album-options').appendChild(noResults);
-        } else if (hasResults && noResultsMessage) {
-            noResultsMessage.remove();
-        }
     }
 
     /**

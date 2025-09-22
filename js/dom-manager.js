@@ -26,10 +26,7 @@ class DOMManager {
     initElements() {
         const elementIds = [
             'album-select',
-            'album-select-container',
-            'album-select-trigger',
             'album-search',
-            'album-options',
             'song-list',
             'song-items',
             'audio-player',

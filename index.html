@@ -30,19 +30,11 @@
                     </div>
                     <div class="Box-body">
                         <div class="form-group">
-                            <div id="album-select" class="custom-select-wrapper">
-                                <div id="album-select-container" class="custom-select" role="combobox" aria-haspopup="listbox" aria-expanded="false">
-                                    <div id="album-select-trigger" class="custom-select-trigger" aria-controls="album-options">
-                                        <span>-- アルバムを選択してください --</span>
-                                        <div class="arrow"></div>
-                                    </div>
-                                    <div class="custom-options" role="listbox">
-                                        <div class="custom-search-wrapper">
-                                            <input type="text" id="album-search" placeholder="アルバムを検索..." class="form-control" aria-label="Search for an album">
-                                        </div>
-                                        <div id="album-options" class="custom-options-list"></div>
-                                    </div>
-                                </div>
+                            <div class="form-group">
+                                <input type="text" id="album-search" placeholder="アルバムを検索..." class="form-control mb-2" aria-label="Search for an album">
+                                <select id="album-select" class="form-select" aria-label="アルバム選択">
+                                    <option value="">-- アルバムを選択してください --</option>
+                                </select>
                             </div>
                         </div>
                     </div>
