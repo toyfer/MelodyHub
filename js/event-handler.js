@@ -47,7 +47,7 @@ class EventHandler {
             { id: 'volume-btn', event: 'click', handler: this.handleVolumeClick.bind(this) },
             { id: 'progress-bar', event: 'click', handler: this.handleProgressClick.bind(this) },
             { id: 'volume-slider', event: 'click', handler: this.handleVolumeSliderClick.bind(this) },
-            { id: 'share-current-song', event: 'click', handler: this.handleShareCurrentSong ? this.handleShareCurrentSong.bind(this) : (()=>{}) },
+            { id: 'share-current-song', event: 'click', handler: this.handleShareCurrentSong.bind(this) },
             { id: 'back-to-album', event: 'click', handler: this.handleBack.bind(this) }
         ];
 
@@ -63,6 +63,8 @@ class EventHandler {
         if (songItems) {
             this.songListHandler = this.handleSongClick.bind(this);
             songItems.addEventListener('click', this.songListHandler);
+            // Also handle share button clicks within song items
+            songItems.addEventListener('click', this.handleSongShareClick.bind(this));
         }
 
         // Keyboard shortcuts
@@ -134,6 +136,11 @@ class EventHandler {
     handleSongClick(e) {
         if (!e || !e.target || !(e.target instanceof Element)) {
             console.error('Invalid event or target');
+            return;
+        }
+
+        // Don't handle song clicks if it's a share button click
+        if (e.target.closest('.song-share-button')) {
             return;
         }
 
@@ -243,6 +250,31 @@ class EventHandler {
             this.ui.showError('音量調整に失敗しました: ' + error.message);
                 try { if (window && window.debug && typeof window.debug.error === 'function') window.debug.error('handleVolumeSliderClick failed', error); } catch (e) {}
         }
+    }
+
+    /**
+     * Handles share button clicks within song items.
+     * @param {Event} e - The click event
+     */
+    handleSongShareClick(e) {
+        if (!e.target.closest('.song-share-button')) {
+            return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const li = e.target.closest('li');
+        if (!li) return;
+
+        const song = li.title;
+        const album = this.dom.getElement('album-select').value;
+        if (!album || !song) {
+            this.ui.showError('アルバムまたは曲が選択されていません');
+            return;
+        }
+
+        this.controller.shareLink(album, song, e.target.closest('.song-share-button'));
     }
 
     /**

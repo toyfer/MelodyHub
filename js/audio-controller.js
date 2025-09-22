@@ -16,16 +16,14 @@ class AudioController {
      * @param {UIUpdater} [uiUpdater] - UI updater instance
      */
     constructor(audioElement, repoOwner = 'toyfer', repoName = 'MelodyHub', uiUpdater = null) {
-        if (!audioElement || !(audioElement instanceof HTMLAudioElement)) {
-            throw new Error('Invalid audio element provided');
-        }
-
         /** @type {HTMLAudioElement} The audio element being controlled */
-        this.audio = audioElement;
+        this.audio = audioElement; // Can be null for Web Audio API only mode
         /** @type {AudioContext} Web Audio API context */
         this.audioContext = null;
         /** @type {AudioBufferSourceNode} Current audio source */
         this.source = null;
+        /** @type {AudioBuffer} Current audio buffer */
+        this.currentBuffer = null;
         /** @type {GainNode} Volume control */
         this.gainNode = null;
         /** @type {number} Start time of current playback */
@@ -136,6 +134,7 @@ class AudioController {
      * @param {AudioBuffer} buffer - The audio buffer to play
      */
     playBuffer(buffer) {
+        this.currentBuffer = buffer;
         this.source = this.audioContext.createBufferSource();
         this.source.buffer = buffer;
         this.source.connect(this.gainNode);
@@ -174,8 +173,8 @@ class AudioController {
      * @returns {Promise<void>}
      */
     async resume() {
-        if (!this.isLoading && this.source && !this.isPlaying) {
-            this.playBuffer(this.source.buffer);
+        if (!this.isLoading && this.currentBuffer && !this.isPlaying) {
+            this.playBuffer(this.currentBuffer);
         }
     }
 
@@ -222,12 +221,12 @@ class AudioController {
      * @param {number} progress - Progress value between 0 and 1
      */
     seek(progress) {
-        if (this.source && this.source.buffer) {
-            const seekTime = progress * this.source.buffer.duration;
+        if (this.currentBuffer) {
+            const seekTime = progress * this.currentBuffer.duration;
             if (this.isPlaying) {
                 this.source.stop();
                 this.pauseTime = seekTime;
-                this.playBuffer(this.source.buffer);
+                this.playBuffer(this.currentBuffer);
             } else {
                 this.pauseTime = seekTime;
             }
@@ -252,7 +251,7 @@ class AudioController {
      * @returns {number} Duration in seconds
      */
     getDuration() {
-        return this.source && this.source.buffer ? this.source.buffer.duration : 0;
+        return this.currentBuffer ? this.currentBuffer.duration : 0;
     }
 
     /**

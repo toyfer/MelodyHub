@@ -153,9 +153,9 @@ class UIUpdater {
     updatePlayPauseButton() {
         const btn = this.dom.getElement('play-pause-btn');
         if (btn) {
-            const icon = btn.querySelector('.icon');
+            const icon = btn.querySelector('i');
             if (icon) {
-                icon.setAttribute('class', this.audio.isPlaying ? 'icon icon-pause' : 'icon icon-play');
+                icon.className = this.audio.isPlaying ? 'fas fa-pause fa-lg' : 'fas fa-play fa-lg';
             }
         }
     }
@@ -166,9 +166,9 @@ class UIUpdater {
     updateVolumeButton() {
         const btn = this.dom.getElement('volume-btn');
         if (btn) {
-            const icon = btn.querySelector('.icon');
+            const icon = btn.querySelector('i');
             if (icon) {
-                icon.setAttribute('class', (this.audio.isMuted || this.audio.currentVolume === 0) ? 'icon icon-volume-muted' : 'icon icon-volume');
+                icon.className = (this.audio.isMuted || this.audio.currentVolume === 0) ? 'fas fa-volume-mute' : 'fas fa-volume-up';
             }
         }
     }
