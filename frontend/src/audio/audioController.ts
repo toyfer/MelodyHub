@@ -115,7 +115,7 @@ class AudioController {
             return true;
         } catch (err) {
             try {
-                const encodedRemotePath = `https://raw.githubusercontent.com/${this.repoOwner}/${this.repoName}/main/${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
+                const encodedRemotePath = `${this.apiClient.baseUrl}${encodeURIComponent(album)}/${encodeURIComponent(song)}`;
                 const response = await fetch(encodedRemotePath);
                 if (!response.ok) throw new Error('Remote fetch failed');
                 const arrayBuffer = await response.arrayBuffer();
