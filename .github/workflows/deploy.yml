@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Trigger the workflow on pushes to the main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # Use a fresh Ubuntu virtual machine for each job
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Checks out your repository under $GITHUB_WORKSPACE
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Specify the Node.js version
+
+      - name: Install dependencies
+        run: npm install # Or yarn install, pnpm install
+        working-directory: frontend
+
+      - name: Build project
+        run: npm run build # Or yarn build, pnpm build. This creates the 'dist' folder.
+        working-directory: frontend
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './frontend/dist' # The directory containing your built application
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
