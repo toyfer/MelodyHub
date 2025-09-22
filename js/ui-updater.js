@@ -182,9 +182,7 @@ class UIUpdater {
         if (duration) {
             const progress = (currentTime / duration) * 100;
             const progressFill = this.dom.getElement('progress-fill');
-            const progressHandle = this.dom.getElement('progress-handle');
             if (progressFill) progressFill.style.width = `${progress}%`;
-            if (progressHandle) progressHandle.style.left = `${progress}%`;
 
             const currentTimeDisplay = this.dom.getElement('current-time');
             if (currentTimeDisplay) currentTimeDisplay.textContent = this.audio.formatTime(currentTime);
@@ -197,9 +195,7 @@ class UIUpdater {
     updateVolume() {
         const volumePercent = this.audio.currentVolume * 100;
         const volumeFill = this.dom.getElement('volume-fill');
-        const volumeHandle = this.dom.getElement('volume-handle');
         if (volumeFill) volumeFill.style.width = `${volumePercent}%`;
-        if (volumeHandle) volumeHandle.style.left = `${volumePercent}%`;
     }
 
     /**
@@ -317,10 +313,8 @@ class UIUpdater {
      */
     resetProgress() {
         const progressFill = this.dom.getElement('progress-fill');
-        const progressHandle = this.dom.getElement('progress-handle');
         const currentTimeDisplay = this.dom.getElement('current-time');
         if (progressFill) progressFill.style.width = '0%';
-        if (progressHandle) progressHandle.style.left = '0%';
         if (currentTimeDisplay) currentTimeDisplay.textContent = this.audio.formatTime(0);
     }
 
