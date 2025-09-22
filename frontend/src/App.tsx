@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import APIClient from './api/apiClient';
+import AudioController from './audio/audioController';
 import AlbumList from './components/AlbumList';
+import SongList from './components/SongList';
 import AudioPlayer from './components/AudioPlayer';
 
 function App() {
   const apiClient = new APIClient('toyfer', 'MelodyHub');
   const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
   const [songs, setSongs] = useState<string[]>([]);
+  const audioControllerRef = useRef<AudioController | null>(null);
 
   const handleSelectAlbum = (album: string, fetchedSongs: string[]) => {
     setSelectedAlbum(album);
     setSongs(fetchedSongs);
-    console.log('Selected Album in App.tsx:', album);
-    console.log('Fetched Songs in App.tsx:', fetchedSongs);
   };
+
+  // AudioPlayerコンポーネント内でAudioControllerを管理するため、App.tsxからは削除
+  // useEffect(() => {
+  //   if (audioRef.current && !audioControllerRef.current) {
+  //     audioControllerRef.current = new AudioController(audioRef.current, apiClient);
+  //   }
+  // }, [apiClient]);
 
   return (
     <div className="container mx-auto p-4">
@@ -26,19 +34,10 @@ function App() {
       </div>
 
       {selectedAlbum && songs.length > 0 && (
-        <div className="mt-4 p-4 border rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Songs in {selectedAlbum.charAt(0).toUpperCase() + selectedAlbum.slice(1)}</h3>
-          <ul>
-            {songs.map((song) => (
-              <li key={song} className="py-1">
-                {song}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <SongList album={selectedAlbum} songs={songs} audioController={audioControllerRef.current} />
       )}
 
-      <AudioPlayer apiClient={apiClient} />
+      <AudioPlayer apiClient={apiClient} audioControllerRef={audioControllerRef} />
     </div>
   );
 }

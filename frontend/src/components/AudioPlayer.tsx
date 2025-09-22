@@ -5,11 +5,11 @@ import { UIUpdater } from '../types/ui';
 
 interface AudioPlayerProps {
   apiClient: APIClient;
+  audioControllerRef: React.MutableRefObject<AudioController | null>;
 }
 
-const AudioPlayer: React.FC<AudioPlayerProps> = ({ apiClient }) => {
+const AudioPlayer: React.FC<AudioPlayerProps> = ({ apiClient, audioControllerRef }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const audioControllerRef = useRef<AudioController | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -27,28 +27,28 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ apiClient }) => {
         setDurationState(audioControllerRef.current.getDuration());
         setCurrentTime(audioControllerRef.current.getCurrentTime());
       }
-    }, []),
+    }, [audioControllerRef]),
     updateProgress: useCallback(() => {
       if (audioControllerRef.current) {
         setCurrentTime(audioControllerRef.current.getCurrentTime());
       }
-    }, []),
+    }, [audioControllerRef]),
     updatePlayPauseButton: useCallback(() => {
       if (audioControllerRef.current) {
         setIsPlaying(audioControllerRef.current.isPlaying);
       }
-    }, []),
+    }, [audioControllerRef]),
     updateVolumeButton: useCallback(() => {
       if (audioControllerRef.current) {
         setIsMuted(audioControllerRef.current.isMuted);
         setVolume(audioControllerRef.current.currentVolume);
       }
-    }, []),
+    }, [audioControllerRef]),
     updateVolume: useCallback(() => {
       if (audioControllerRef.current) {
         setVolume(audioControllerRef.current.currentVolume);
       }
-    }, []),
+    }, [audioControllerRef]),
     updateNowPlaying: useCallback((song: string) => {
       setNowPlaying(song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, ''));
     }, []),
@@ -84,7 +84,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ apiClient }) => {
     if (audioRef.current && !audioControllerRef.current) {
       audioControllerRef.current = new AudioController(audioRef.current, apiClient, uiUpdater);
     }
-  }, [apiClient, uiUpdater]);
+  }, [apiClient, uiUpdater, audioControllerRef]);
 
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds)) return '0:00';
