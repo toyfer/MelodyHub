@@ -5,6 +5,11 @@ on:
     branches:
       - main # Trigger the workflow on pushes to the main branch
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest # Use a fresh Ubuntu virtual machine for each job
