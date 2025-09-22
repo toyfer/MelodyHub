@@ -23,7 +23,7 @@
 
                 <!-- アルバム選択 -->
                 <div class="Box mb-4">
-                    <div class="Box-header color-bg-primary color-text-primary">
+                    <div class="Box-header color-bg-subtle color-border-muted border-bottom">
                         <h3 class="Box-title d-flex flex-items-center">
                             <i class="fas fa-folder mr-2"></i>アルバムを選択
                         </h3>
@@ -42,7 +42,7 @@
 
                 <!-- 曲一覧 -->
                 <div class="Box mb-4 d-none" id="song-list">
-                    <div class="Box-header color-bg-success color-text-primary">
+                    <div class="Box-header color-bg-subtle color-border-muted border-bottom">
                         <h3 class="Box-title d-flex flex-items-center">
                             <i class="fas fa-list mr-2"></i>トラック一覧
                         </h3>
@@ -57,20 +57,20 @@
 
                 <!-- オーディオプレイヤー -->
                 <div class="Box mb-4 d-none" id="audio-player">
-                    <div class="Box-header color-bg-info color-text-primary d-flex flex-justify-between flex-items-center">
-                        <button id="back-to-album" class="btn btn-sm">
+                    <div class="Box-header color-bg-subtle color-border-muted border-bottom d-flex flex-justify-between flex-items-center">
+                        <button id="back-to-album" class="btn-outline btn-sm">
                             <i class="fas fa-arrow-left mr-1"></i>戻る
                         </button>
                         <h3 class="Box-title d-flex flex-items-center">
                             <i class="fas fa-play mr-2"></i>再生中
                         </h3>
-                        <button id="share-current-song" class="btn btn-sm">
+                        <button id="share-current-song" class="btn-outline btn-sm">
                             <i class="fas fa-share mr-1"></i>シェア
                         </button>
                     </div>
                     <div class="Box-body">
                         <div id="now-playing" class="text-center mb-3 h3 color-text-primary"></div>
-                        <div class="custom-audio-player bg-gray-50 rounded-1 p-4">
+                        <div class="custom-audio-player color-bg-subtle rounded-1 p-4 border color-border-default">
                             <div class="d-flex flex-items-center flex-justify-center gap-3 flex-wrap" style="min-height: 60px;">
                                 <button id="play-pause-btn" class="btn btn-primary btn-lg rounded-circle d-flex flex-items-center flex-justify-center" style="width: 4rem; height: 4rem;">
                                     <i class="fas fa-play fa-lg"></i>
@@ -85,7 +85,7 @@
                                     </div>
                                 </div>
                                 <div class="d-flex flex-items-center gap-2 volume-controls" style="flex-shrink: 0;">
-                                    <button id="volume-btn" class="btn btn-secondary btn-sm d-flex flex-items-center flex-justify-center" style="width: 2.5rem; height: 2.5rem;">
+                                    <button id="volume-btn" class="btn-outline btn-sm d-flex flex-items-center flex-justify-center">
                                         <i class="fas fa-volume-up"></i>
                                     </button>
                                     <div class="progress" style="width: 80px; height: 6px; cursor: pointer; background-color: #e1e4e8; border-radius: 6px; position: relative; display: block;" id="volume-slider">
