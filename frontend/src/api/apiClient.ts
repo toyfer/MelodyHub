@@ -21,15 +21,11 @@ interface APIClientCache {
 }
 
 class APIClient {
-  private repoOwner: string;
-  private repoName: string;
   private baseUrl: string;
   private audioExtensions: string[];
   private cache: APIClientCache;
 
   constructor(repoOwner: string, repoName: string) {
-    this.repoOwner = repoOwner;
-    this.repoName = repoName;
     this.baseUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
     this.audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac'];
     this.cache = {};
