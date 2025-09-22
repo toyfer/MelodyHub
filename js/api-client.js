@@ -22,6 +22,8 @@ class APIClient {
         this.baseUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
         /** @type {string[]} Supported audio file extensions */
         this.audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac'];
+        /** @type {Object} Cache for API responses */
+        this.cache = {};
     }
 
     /**
@@ -31,6 +33,10 @@ class APIClient {
      * @returns {Promise<string[]>} Array of album names
      */
     async fetchAlbumList() {
+        if (this.cache.albumList) {
+            return this.cache.albumList;
+        }
+
         const maxRetries = 3;
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             const controller = new AbortController();
@@ -50,6 +56,7 @@ class APIClient {
 
                 // アルバムが見つかった場合はGitHubデータを返す
                 if (albums.length > 0) {
+                    this.cache.albumList = albums;
                     return albums;
                 }
 
@@ -61,7 +68,9 @@ class APIClient {
                 }
                 if (attempt === maxRetries) {
                     // APIが失敗したらデモデータを使用
-                    return ['monsterhunter', 'classical', 'jazz', 'electronic'];
+                    const demoAlbums = ['monsterhunter', 'classical', 'jazz', 'electronic'];
+                    this.cache.albumList = demoAlbums;
+                    return demoAlbums;
                 }
                 // Wait before retry
                 await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
@@ -77,6 +86,10 @@ class APIClient {
      * @returns {Promise<string[]>} Array of song filenames
      */
     async fetchSongList(album) {
+        if (this.cache[album]) {
+            return this.cache[album];
+        }
+
         if (!album || typeof album !== 'string' || album.trim() === '') {
             throw new Error('Invalid album name provided');
         }
@@ -99,6 +112,7 @@ class APIClient {
 
                 // 曲が見つかった場合はGitHubデータを返す
                 if (songs.length > 0) {
+                    this.cache[album] = songs;
                     return songs;
                 }
 
@@ -116,7 +130,9 @@ class APIClient {
                         'jazz': ['Miles Davis - Kind of Blue.mp3', 'John Coltrane - Giant Steps.mp3', 'Bill Evans - Waltz for Debby.mp3'],
                         'electronic': ['Ambient Journey.mp3', 'Digital Dreams.mp3', 'Synthwave Nights.mp3']
                     };
-                    return demoSongs[album] || [];
+                    const songs = demoSongs[album] || [];
+                    this.cache[album] = songs;
+                    return songs;
                 }
                 // Wait before retry
                 await new Promise(resolve => setTimeout(resolve, 1000 * attempt));

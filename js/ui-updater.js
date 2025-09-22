@@ -80,15 +80,28 @@ class UIUpdater {
     filterAlbumOptions(searchTerm) {
         const options = this.dom.querySelectorAll('#album-options .custom-option');
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        let hasResults = false;
 
         options.forEach(option => {
             const albumName = option.textContent.toLowerCase();
             if (albumName.includes(lowerCaseSearchTerm)) {
                 option.style.display = 'block';
+                hasResults = true;
             } else {
                 option.style.display = 'none';
             }
         });
+
+        const noResultsMessage = this.dom.querySelector('#album-options .no-results');
+        if (!hasResults && !noResultsMessage) {
+            const noResults = this.dom.createElement('div', {
+                className: 'custom-option no-results',
+                textContent: '結果がありません'
+            });
+            this.dom.getElement('album-options').appendChild(noResults);
+        } else if (hasResults && noResultsMessage) {
+            noResultsMessage.remove();
+        }
     }
 
     /**

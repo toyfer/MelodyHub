@@ -31,14 +31,14 @@
                     <div class="Box-body">
                         <div class="form-group">
                             <div id="album-select" class="custom-select-wrapper">
-                                <div id="album-select-container" class="custom-select">
-                                    <div id="album-select-trigger" class="custom-select-trigger">
+                                <div id="album-select-container" class="custom-select" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+                                    <div id="album-select-trigger" class="custom-select-trigger" aria-controls="album-options">
                                         <span>-- アルバムを選択してください --</span>
                                         <div class="arrow"></div>
                                     </div>
-                                    <div class="custom-options">
+                                    <div class="custom-options" role="listbox">
                                         <div class="custom-search-wrapper">
-                                            <input type="text" id="album-search" placeholder="アルバムを検索..." class="form-control">
+                                            <input type="text" id="album-search" placeholder="アルバムを検索..." class="form-control" aria-label="Search for an album">
                                         </div>
                                         <div id="album-options" class="custom-options-list"></div>
                                     </div>
@@ -57,6 +57,7 @@
                     </div>
                     <div class="Box-body">
                         <div class="song-container bg-gray-100 rounded-1 p-3" style="max-height: 400px; overflow-y: auto;">
+                            <div id="loading-spinner" class="d-none"><div class="spinner"></div></div>
                             <ul id="song-items" class="list-style-none"></ul>
                         </div>
                     </div>
@@ -113,152 +114,6 @@
         </div>
     </div>
 
-    <script type="module">
-    import DOMManager from './js/dom-manager.js';
-    import APIClient from './js/api-client.js';
-    import AudioController from './js/audio-controller.js';
-    import UIUpdater from './js/ui-updater.js';
-    import EventHandler from './js/event-handler.js';
-
-        // 設定
-        const repoOwner = 'toyfer';
-        const repoName = 'MelodyHub';
-        const demoMode = true; // デモモードで安定動作
-
-        // モジュールの初期化
-    const dom = new DOMManager();
-    const api = new APIClient(repoOwner, repoName);
-    const audioElement = null; // Using Web Audio API instead
-    const ui = new UIUpdater(dom, null); // audio is null for now
-    const audio = new AudioController(audioElement, repoOwner, repoName, ui);
-        ui.audio = audio; // set audio after creation
-
-        // グローバル関数として公開（event-handlerからアクセスするため）
-        window.app = {
-            demoMode,
-            playSong: async (album, song) => {
-                if (!album || !song) {
-                    ui.showError('アルバム名または曲名が指定されていません');
-                    return;
-                }
-
-                try {
-                    const success = await audio.playSong(album, song, false);
-                    if (success) {
-                        ui.updateNowPlaying(song);
-                        ui.updatePlayingVisual(song);
-                        ui.showPlayer();
-                        ui.hideNonPlayerSections();
-                        ui.showSuccess(`再生開始: ${song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')}`);
-                    }
-                } catch (err) {
-                    ui.showError(err.message || '音楽の再生に失敗しました');
-                }
-            },
-            shareLink: async (album, song, buttonElement = null) => {
-                const currentUrl = new URL(window.location);
-                currentUrl.searchParams.set('album', album);
-                currentUrl.searchParams.set('song', song);
-                const shareUrl = currentUrl.toString();
-
-                try {
-                    await navigator.clipboard.writeText(shareUrl);
-                    ui.showSuccess(`リンクをコピーしました: ${song.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')}`);
-
-                    if (buttonElement) {
-                        const originalText = buttonElement.innerHTML;
-                        buttonElement.innerHTML = '<i class="fas fa-check"></i>';
-                        buttonElement.classList.add('copied');
-
-                        setTimeout(() => {
-                            buttonElement.innerHTML = originalText;
-                            buttonElement.classList.remove('copied');
-                        }, 2000);
-                    }
-                } catch (err) {
-                    ui.showError('クリップボードへのアクセスができません。URLを手動でコピーしてください: ' + shareUrl);
-                }
-            }
-        };
-
-        // イベントハンドラーの初期化（appオブジェクトを渡す）
-        const events = new EventHandler(dom, api, audio, ui, window.app);
-
-        // 初期化
-        async function init() {
-            ui.replaceIcons();
-            if (audio.audio) {
-                audio.audio.volume = audio.currentVolume;
-            }
-            ui.updatePlayPauseButton();
-            ui.updateVolumeButton();
-
-            const albums = await api.fetchAlbumList();
-            ui.populateAlbumSelect(albums);
-            await handleUrlParameters(albums);
-        }
-
-        // URLパラメータ処理
-        async function handleUrlParameters(albums) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const initialAlbum = urlParams.get('album');
-            const initialSong = urlParams.get('song');
-
-            if (initialAlbum && initialSong) {
-                const errors = validateUrlParameters(initialAlbum, initialSong, albums);
-                if (errors.length > 0) {
-                    ui.showError(errors.join(' / '));
-                    return;
-                }
-
-                if (albums.includes(initialAlbum)) {
-                    const trigger = dom.getElement('album-select-trigger');
-                    if (trigger) {
-                        trigger.querySelector('span').textContent = initialAlbum;
-                    }
-
-                    const options = dom.querySelectorAll('#album-options .custom-option');
-                    options.forEach(option => {
-                        if (option.dataset.value === initialAlbum) {
-                            option.classList.add('selected');
-                        }
-                    });
-
-                    const songs = await api.fetchSongList(initialAlbum);
-
-                    if (songs.includes(initialSong)) {
-                        ui.displaySongList(songs, initialAlbum);
-                        // Highlight the song from URL parameters but don't auto-play
-                        ui.updatePlayingVisual(initialSong);
-                        ui.showSuccess(`曲が選択されました: ${initialSong.replace(/\.(mp3|wav|ogg|m4a|aac)$/i, '')} - 再生するにはクリックしてください`);
-                    } else {
-                        ui.displaySongList(songs, initialAlbum);
-                        ui.showError(`指定された曲がアルバムに存在しません: ${initialSong}`);
-                    }
-                } else {
-                    ui.showError(`指定されたアルバムが存在しません: ${initialAlbum}`);
-                }
-            }
-        }
-
-        function validateUrlParameters(album, song, availableAlbums) {
-            const errors = [];
-
-            if (!album) {
-                errors.push('アルバムが指定されていません');
-            } else if (!availableAlbums.includes(album)) {
-                errors.push(`指定されたアルバムが存在しません: ${album}`);
-            }
-
-            if (!song) {
-                errors.push('曲が指定されていません');
-            }
-
-            return errors;
-        }
-
-        // 初期化実行
-        init();
-    </script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

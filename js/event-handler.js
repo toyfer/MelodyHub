@@ -103,7 +103,8 @@ class EventHandler {
     handleAlbumSelectToggle() {
         const customSelect = this.dom.getElement('album-select-container');
         if (customSelect) {
-            customSelect.classList.toggle('open');
+            const isOpen = customSelect.classList.toggle('open');
+            customSelect.setAttribute('aria-expanded', isOpen);
         }
     }
 
@@ -135,22 +136,32 @@ class EventHandler {
             }
 
             this.isChangingAlbum = true;
-            const songItems = this.dom.getElement('song-items');
-            if (songItems) {
-                songItems.innerHTML = '<li class="loading">楽曲を読み込み中...</li>';
-            }
-            this.dom.setStyle(this.dom.getElement('song-list'), { display: 'block' });
+            const songList = this.dom.getElement('song-list');
+            const spinner = this.dom.getElement('loading-spinner');
+            if (songList) songList.classList.remove('d-none');
+            if (spinner) spinner.classList.remove('d-none');
 
             try {
                 const songs = await this.api.fetchSongList(selectedAlbum);
                 this.ui.displaySongList(songs, selectedAlbum);
             } catch (error) {
                 this.ui.showError('曲リストの取得に失敗しました');
-                this.dom.setStyle(this.dom.getElement('song-list'), { display: 'none' });
+                if (songList) songList.classList.add('d-none');
             } finally {
                 this.isChangingAlbum = false;
+                if (spinner) spinner.classList.add('d-none');
             }
         }
+    }
+
+    /**
+     * Handles clicks on song list items.
+     * Initiates playback of the clicked song.
+     * @param {Event} e - The click event
+     */
+    _getSelectedAlbum() {
+        const trigger = this.dom.getElement('album-select-trigger');
+        return trigger ? trigger.querySelector('span').textContent : null;
     }
 
     /**
@@ -174,8 +185,7 @@ class EventHandler {
             if (!li || li.classList.contains('empty-state')) return;
 
             const song = li.title;
-            const trigger = this.dom.getElement('album-select-trigger');
-            const album = trigger ? trigger.querySelector('span').textContent : null;
+            const album = this._getSelectedAlbum();
 
             if (!album) {
                 this.ui.showError('アルバムが選択されていません');
@@ -295,8 +305,7 @@ class EventHandler {
         if (!li) return;
 
         const song = li.title;
-        const trigger = this.dom.getElement('album-select-trigger');
-        const album = trigger ? trigger.querySelector('span').textContent : null;
+        const album = this._getSelectedAlbum();
 
         if (!album || !song) {
             this.ui.showError('アルバムまたは曲が選択されていません');
@@ -312,8 +321,7 @@ class EventHandler {
      */
     async handleShareCurrentSong(e) {
         try {
-            const trigger = this.dom.getElement('album-select-trigger');
-            const album = trigger ? trigger.querySelector('span').textContent : null;
+            const album = this._getSelectedAlbum();
             const song = this.audio && this.audio.currentlyPlaying ? this.audio.currentlyPlaying.song : null;
             if (!album || !song) {
                 this.ui.showError('再生中の曲がありません');
