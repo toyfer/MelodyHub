@@ -16,12 +16,26 @@ function App() {
     setSongs(fetchedSongs);
   };
 
-  // AudioPlayerコンポーネント内でAudioControllerを管理するため、App.tsxからは削除
-  // useEffect(() => {
-  //   if (audioRef.current && !audioControllerRef.current) {
-  //     audioControllerRef.current = new AudioController(audioRef.current, apiClient);
-  //   }
-  // }, [apiClient]);
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === 'Space') {
+        event.preventDefault();
+        if (audioControllerRef.current) {
+          if (audioControllerRef.current.isPlaying) {
+            audioControllerRef.current.pause();
+          } else {
+            audioControllerRef.current.resume();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <div className="container mx-auto p-4">

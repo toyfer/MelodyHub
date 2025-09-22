@@ -61,6 +61,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ apiClient, audioControllerRef
     }, []),
     showSuccess: useCallback((message: string) => {
       // TODO: Successメッセージ表示の実装
+      alert(message); // 一時的にalertで表示
     }, []),
     showPlayer: useCallback(() => {
       // TODO: プレイヤー表示ロジック
@@ -121,6 +122,26 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ apiClient, audioControllerRef
     audioControllerRef.current.seek(progress);
   };
 
+  const handleShareLink = async () => {
+    if (!audioControllerRef.current || !audioControllerRef.current.currentlyPlaying.album || !audioControllerRef.current.currentlyPlaying.song) {
+      uiUpdater.showError('再生中の曲がありません');
+      return;
+    }
+    const album = audioControllerRef.current.currentlyPlaying.album;
+    const song = audioControllerRef.current.currentlyPlaying.song;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('album', album);
+    url.searchParams.set('song', song);
+
+    try {
+      await navigator.clipboard.writeText(url.href);
+      uiUpdater.showSuccess('リンクをクリップボードにコピーしました！');
+    } catch (err) {
+      uiUpdater.showError('リンクのコピーに失敗しました。');
+    }
+  };
+
   return (
     <div className="audio-player-container mt-4 p-4 border rounded-lg shadow-md">
       <h3 className="text-lg font-semibold mb-2">Now Playing: {nowPlaying || 'None'}</h3>
@@ -164,6 +185,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ apiClient, audioControllerRef
             className="w-24"
           />
         </div>
+        <button onClick={handleShareLink} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.49 9 12c0-.49-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6.632l6.632-3.316m0 0a3 3 0 110-2.684 3 3 0 010 2.684z" />
+          </svg>
+        </button>
       </div>
       {error && <div className="text-red-500 mt-2">Error: {error}</div>}
       <audio ref={audioRef} className="hidden"></audio>
