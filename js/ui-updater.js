@@ -300,11 +300,9 @@ class UIUpdater {
         const songList = this.dom.getElement('song-list');
         if (albumSelector) {
             albumSelector.classList.remove('d-none');
-            albumSelector.style.display = 'block';
         }
         if (songList) {
             songList.classList.remove('d-none');
-            songList.style.display = 'block';
         }
     }
 
@@ -325,7 +323,6 @@ class UIUpdater {
         const audioPlayer = this.dom.getElement('audio-player');
         if (audioPlayer) {
             audioPlayer.classList.add('d-none');
-            audioPlayer.style.display = 'none';
         }
     }
 
@@ -336,7 +333,6 @@ class UIUpdater {
         const audioPlayer = this.dom.getElement('audio-player');
         if (audioPlayer) {
             audioPlayer.classList.remove('d-none');
-            audioPlayer.style.display = 'block';
         }
     }
 }
