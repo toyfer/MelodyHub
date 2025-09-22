@@ -73,6 +73,7 @@ class UIUpdater {
             });
             albumButtonsContainer.appendChild(button);
         });
+        console.log('Album buttons container innerHTML:', albumButtonsContainer.innerHTML);
     }
 
     /**
