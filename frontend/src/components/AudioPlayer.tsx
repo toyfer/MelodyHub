@@ -85,7 +85,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ apiClient, audioControllerRef
     if (audioRef.current && !audioControllerRef.current) {
       audioControllerRef.current = new AudioController(audioRef.current, apiClient, uiUpdater);
     }
-  }, [apiClient, uiUpdater, audioControllerRef]);
+  }, [apiClient, uiUpdater]);
 
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds)) return '0:00';
