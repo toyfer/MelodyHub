@@ -1,3 +1,4 @@
+//@ts-check
 import DOMManager from './dom-manager.js';
 import APIClient from './api-client.js';
 import AudioController from './audio-controller.js';

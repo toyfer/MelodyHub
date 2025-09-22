@@ -1,3 +1,4 @@
+//@ts-check
 /**
  * UI Updater Module
  * Handles UI updates for buttons, lists, messages, and progress
@@ -59,18 +60,18 @@ class UIUpdater {
      * @param {string[]} albums - Array of album names to display
      */
     populateAlbumSelect(albums) {
-        const albumSelect = this.dom.getElement('album-select');
-        if (!albumSelect) return;
+        const albumButtonsContainer = this.dom.getElement('album-buttons-container');
+        if (!albumButtonsContainer) return;
 
-        // Clear existing options, keeping the default placeholder
-        albumSelect.innerHTML = '<option value="">-- アルバムを選択してください --</option>';
+        albumButtonsContainer.innerHTML = ''; // Clear existing buttons
 
         albums.forEach(album => {
-            const option = this.dom.createElement('option', {
-                value: album,
-                textContent: album.charAt(0).toUpperCase() + album.slice(1)
+            const button = this.dom.createElement('button', {
+                className: 'btn btn-outline mr-2 mb-2', // Primer CSS classes for buttons
+                textContent: album.charAt(0).toUpperCase() + album.slice(1),
+                'data-album': album // Store album name in a data attribute
             });
-            albumSelect.appendChild(option);
+            albumButtonsContainer.appendChild(button);
         });
     }
 
@@ -284,9 +285,9 @@ class UIUpdater {
      * Hides the album selector and song list sections.
      */
     hideNonPlayerSections() {
-        const albumSelector = this.dom.getElement('album-select');
+        const albumButtonsContainer = this.dom.getElement('album-buttons-container');
         const songList = this.dom.getElement('song-list');
-        if (albumSelector) albumSelector.classList.add('d-none');
+        if (albumButtonsContainer) albumButtonsContainer.classList.add('d-none');
         if (songList) songList.classList.add('d-none');
     }
 
@@ -294,10 +295,10 @@ class UIUpdater {
      * Shows all sections (album selector and song list).
      */
     showAllSections() {
-        const albumSelector = this.dom.getElement('album-select');
+        const albumButtonsContainer = this.dom.getElement('album-buttons-container');
         const songList = this.dom.getElement('song-list');
-        if (albumSelector) {
-            albumSelector.classList.remove('d-none');
+        if (albumButtonsContainer) {
+            albumButtonsContainer.classList.remove('d-none');
         }
         if (songList) {
             songList.classList.remove('d-none');

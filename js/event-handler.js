@@ -1,3 +1,4 @@
+//@ts-check
 /**
  * Event Handler Module
  * Manages event listeners and delegates to appropriate modules
@@ -42,8 +43,7 @@ class EventHandler {
      */
     setupEventListeners() {
         this.eventListeners = [
-            { id: 'album-select', event: 'change', handler: this.handleAlbumChange.bind(this) },
-            { id: 'album-search', event: 'input', handler: this.handleAlbumSearch.bind(this) },
+            { id: 'album-buttons-container', event: 'click', handler: this.handleAlbumButtonClick.bind(this) },
             { id: 'play-pause-btn', event: 'click', handler: this.handlePlayPause.bind(this) },
             { id: 'volume-btn', event: 'click', handler: this.handleVolumeClick.bind(this) },
             { id: 'progress-bar', event: 'click', handler: this.handleProgressClick.bind(this) },
@@ -94,68 +94,67 @@ class EventHandler {
         this.debounceTimers = {};
     }
 
-    /**
-     * Handles album selection changes.
-     * Fetches and displays songs for the selected album.
-     * @async
-     */
-    async handleAlbumChange(e) {
-        const selectedAlbum = e.target.value;
-
-        if (this.isChangingAlbum) {
-            return;
-        }
-
-        if (!selectedAlbum) {
-            this.ui.showAllSections();
-            return;
-        }
-
-        this.isChangingAlbum = true;
-        const songList = this.dom.getElement('song-list');
-        const spinner = this.dom.getElement('loading-spinner');
-        if (songList) songList.classList.remove('d-none');
-        if (spinner) spinner.classList.remove('d-none');
-
-        try {
-            const songs = await this.api.fetchSongList(selectedAlbum);
-            this.ui.displaySongList(songs, selectedAlbum);
-        } catch (error) {
-            this.ui.showError('曲リストの取得に失敗しました');
-            if (songList) songList.classList.add('d-none');
-        } finally {
-            this.isChangingAlbum = false;
-            if (spinner) spinner.classList.add('d-none');
-        }
-    }
-
-    handleAlbumSearch(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        const albumSelect = this.dom.getElement('album-select');
-        if (!albumSelect) return;
-
-        // Iterate through options, starting from the second one (skipping the placeholder)
-        for (let i = 1; i < albumSelect.options.length; i++) {
-            const option = albumSelect.options[i];
-            const albumName = option.textContent.toLowerCase();
-            if (albumName.includes(searchTerm)) {
-                option.style.display = ''; // Show the option
-            } else {
-                option.style.display = 'none'; // Hide the option
+        async handleAlbumButtonClick(e) {
+            const clickedButton = e.target.closest('button[data-album]');
+            if (!clickedButton) return;
+    
+            const selectedAlbum = clickedButton.dataset.album;
+    
+            // Remove 'btn-primary' from all album buttons and add to the clicked one
+            const allAlbumButtons = this.dom.querySelectorAll('#album-buttons-container button');
+            allAlbumButtons.forEach(btn => btn.classList.remove('btn-primary'));
+            clickedButton.classList.add('btn-primary');
+    
+            if (this.isChangingAlbum) {
+                return;
+            }
+    
+            if (!selectedAlbum) {
+                this.ui.showAllSections();
+                return;
+            }
+    
+            this.isChangingAlbum = true;
+            const songList = this.dom.getElement('song-list');
+            const spinner = this.dom.getElement('loading-spinner');
+            if (songList) songList.classList.remove('d-none');
+            if (spinner) spinner.classList.remove('d-none');
+    
+            try {
+                const songs = await this.api.fetchSongList(selectedAlbum);
+                this.ui.displaySongList(songs, selectedAlbum);
+            } catch (error) {
+                this.ui.showError('曲リストの取得に失敗しました');
+                if (songList) songList.classList.add('d-none');
+            } finally {
+                this.isChangingAlbum = false;
+                if (spinner) spinner.classList.add('d-none');
             }
         }
-    }
-
-    /**
-     * Handles clicks on song list items.
-     * Initiates playback of the clicked song.
-     * @async
-     */
-    _getSelectedAlbum() {
-        const albumSelect = this.dom.getElement('album-select');
-        return albumSelect ? albumSelect.value : null;
-    }
-
+    
+        /**
+         * Handles clicks on song list items.
+         * Initiates playback of the clicked song.
+         * @async
+         */
+        _getSelectedAlbum() {
+            const selectedButton = this.dom.querySelector('#album-buttons-container button.btn-primary');
+            return selectedButton ? selectedButton.dataset.album : null;
+        }
+    
+        /**
+         * Plays the currently selected song.
+         */
+        playSelectedSong() {
+            const selectedSong = this.dom.querySelector('#song-items .song-item.selected');
+            if (selectedSong) {
+                const songTitle = selectedSong.title;
+                const album = this._getSelectedAlbum();
+                if (album && songTitle) {
+                    this.controller.playSong(album, songTitle);
+                }
+            }
+        }
     /**
      * Handles clicks on song list items.
      * Initiates playback of the clicked song.
@@ -429,7 +428,7 @@ class EventHandler {
         const selectedSong = this.dom.querySelector('#song-items .song-item.selected');
         if (selectedSong) {
             const songTitle = selectedSong.title;
-            const album = this.dom.getElement('album-select').value;
+            const album = this._getSelectedAlbum();
             if (album && songTitle) {
                 this.controller.playSong(album, songTitle);
             }

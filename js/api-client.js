@@ -1,3 +1,4 @@
+//@ts-check
 /**
  * API Client Module
  * Handles communication with GitHub API and local file fetching

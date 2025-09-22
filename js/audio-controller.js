@@ -1,3 +1,4 @@
+//@ts-check
 /**
  * Audio Controller Module
  * Handles audio playback, volume, and progress control

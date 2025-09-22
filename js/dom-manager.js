@@ -1,3 +1,4 @@
+//@ts-check
 /**
  * DOM Manager Module
  * Handles DOM element retrieval and basic operations
@@ -25,8 +26,7 @@ class DOMManager {
      */
     initElements() {
         const elementIds = [
-            'album-select',
-            'album-search',
+            'album-buttons-container',
             'song-list',
             'song-items',
             'audio-player',
