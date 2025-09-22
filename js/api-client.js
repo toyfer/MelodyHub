@@ -66,21 +66,14 @@ class APIClient {
                 if (err.name === 'AbortError') {
                 } else {
                 }
-                if (attempt === maxRetries) {
-                    // APIが失敗したらデモデータを使用
-                    const demoAlbums = ['monsterhunter', 'classical', 'jazz', 'electronic'];
-                    this.cache.albumList = demoAlbums;
-                    return demoAlbums;
-                }
-                // Wait before retry
-                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                throw err; // Propagate the error if API call fails
             }
         }
     }
 
     /**
      * Fetches the list of songs in a specific album.
-     * Always tries GitHub API first, falls back to demo data if needed.
+     * Always tries GitHub API first.
      * @async
      * @param {string} album - The album name to fetch songs from
      * @returns {Promise<string[]>} Array of song filenames
@@ -122,20 +115,7 @@ class APIClient {
                 if (err.name === 'AbortError') {
                 } else {
                 }
-                if (attempt === maxRetries) {
-                    // APIが失敗したらデモデータを使用
-                    const demoSongs = {
-                        'monsterhunter': ['もうひとつの楽しみ.mp3', '大敵への挑戦.mp3'],
-                        'classical': ['Beethoven - Symphony No. 9.mp3', 'Mozart - Piano Sonata K331.mp3', 'Bach - Brandenburg Concerto No. 3.mp3'],
-                        'jazz': ['Miles Davis - Kind of Blue.mp3', 'John Coltrane - Giant Steps.mp3', 'Bill Evans - Waltz for Debby.mp3'],
-                        'electronic': ['Ambient Journey.mp3', 'Digital Dreams.mp3', 'Synthwave Nights.mp3']
-                    };
-                    const songs = demoSongs[album] || [];
-                    this.cache[album] = songs;
-                    return songs;
-                }
-                // Wait before retry
-                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                throw err; // Propagate the error if API call fails
             }
         }
     }    /**
