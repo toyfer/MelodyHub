@@ -40,10 +40,8 @@ class DOMManager {
             'duration',
             'progress-bar',
             'progress-fill',
-            'progress-handle',
             'volume-slider',
-            'volume-fill',
-            'volume-handle'
+            'volume-fill'
         ];
 
         elementIds.forEach(id => {

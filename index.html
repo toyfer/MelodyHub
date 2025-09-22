@@ -69,25 +69,25 @@
                     <div class="Box-body">
                         <div id="now-playing" class="text-center mb-3 h3 color-text-primary"></div>
                         <div class="custom-audio-player bg-gray-50 rounded-1 p-4">
-                            <div class="d-flex flex-items-center flex-justify-center gap-3 flex-wrap">
+                            <div class="d-flex flex-items-center flex-justify-center gap-3 flex-wrap" style="min-height: 60px;">
                                 <button id="play-pause-btn" class="btn btn-primary btn-lg rounded-circle d-flex flex-items-center flex-justify-center" style="width: 4rem; height: 4rem;">
                                     <i class="fas fa-play fa-lg"></i>
                                 </button>
-                                <div class="flex-1" style="min-width: 200px;">
+                                <div class="flex-1" style="min-width: 200px; max-width: 100%;">
                                     <div class="d-flex flex-items-center gap-2 mb-1">
                                         <span id="current-time" class="text-small color-text-secondary" style="min-width: 2.5rem; text-align: center;">0:00</span>
                                         <span id="duration" class="text-small color-text-secondary" style="min-width: 2.5rem; text-align: center;">0:00</span>
                                     </div>
-                                    <div class="progress" style="height: 8px; cursor: pointer;" id="progress-bar">
-                                        <div class="progress-bar bg-blue" role="progressbar" id="progress-fill" style="width: 0%"></div>
+                                    <div class="progress" style="height: 8px; cursor: pointer; background-color: #e1e4e8; border-radius: 6px; position: relative; display: block;" id="progress-bar">
+                                        <div class="progress-bar" role="progressbar" id="progress-fill" style="width: 0%; height: 100%; background-color: #0969da; border-radius: 6px; transition: width 0.3s ease;"></div>
                                     </div>
                                 </div>
-                                <div class="d-flex flex-items-center gap-2">
+                                <div class="d-flex flex-items-center gap-2 volume-controls" style="flex-shrink: 0;">
                                     <button id="volume-btn" class="btn btn-secondary btn-sm d-flex flex-items-center flex-justify-center" style="width: 2.5rem; height: 2.5rem;">
                                         <i class="fas fa-volume-up"></i>
                                     </button>
-                                    <div class="progress" style="width: 80px; height: 6px; cursor: pointer;" id="volume-slider">
-                                        <div class="progress-bar bg-gray" role="progressbar" id="volume-fill" style="width: 70%"></div>
+                                    <div class="progress" style="width: 80px; height: 6px; cursor: pointer; background-color: #e1e4e8; border-radius: 6px; position: relative; display: block;" id="volume-slider">
+                                        <div class="progress-bar" role="progressbar" id="volume-fill" style="width: 70%; height: 100%; background-color: #656d76; border-radius: 6px;"></div>
                                     </div>
                                 </div>
                             </div>
